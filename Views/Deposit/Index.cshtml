@@ -1,0 +1,347 @@
+﻿@model InternetBanking.Models.ViewModels.CashDepositViewModel
+@{
+    ViewData["Title"] = "Add Funds";
+    var accounts = ViewBag.Accounts as List<InternetBanking.Models.Account>;
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2>💰 Add Funds to Your Account</h2>
+                <p class="text-muted mb-0">Choose from multiple deposit options</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Cash Deposit -->
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 border-success">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">💵 Cash Deposit</h5>
+            </div>
+            <div class="card-body">
+                <p class="card-text">Deposit cash at any branch or ATM</p>
+                <ul class="list-unstyled">
+                    <li>✓ Instant availability</li>
+                    <li>✓ No processing fees</li>
+                    <li>✓ Up to $50,000 per day</li>
+                </ul>
+                <button class="btn btn-success w-100" data-bs-toggle="modal" data-bs-target="#cashDepositModal">
+                    Deposit Cash
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Check Deposit -->
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 border-primary">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">📄 Check Deposit</h5>
+            </div>
+            <div class="card-body">
+                <p class="card-text">Deposit checks electronically or at branch</p>
+                <ul class="list-unstyled">
+                    <li>✓ Mobile deposit available</li>
+                    <li>✓ 1-2 business day hold</li>
+                    <li>✓ Up to $100,000 per check</li>
+                </ul>
+                <button class="btn btn-primary w-100" data-bs-toggle="modal" data-bs-target="#checkDepositModal">
+                    Deposit Check
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Wire Transfer -->
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 border-info">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">🌐 Wire Transfer</h5>
+            </div>
+            <div class="card-body">
+                <p class="card-text">Receive wire transfers from other banks</p>
+                <ul class="list-unstyled">
+                    <li>✓ Same-day processing</li>
+                    <li>✓ Secure international transfers</li>
+                    <li>✓ No daily limits</li>
+                </ul>
+                <button class="btn btn-info w-100" data-bs-toggle="modal" data-bs-target="#wireTransferModal">
+                    Receive Wire
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Additional Information -->
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">📋 Deposit Limits & Fees</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>Method</th>
+                            <th>Daily Limit</th>
+                            <th>Fee</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Cash Deposit</td>
+                            <td>$50,000</td>
+                            <td>Free</td>
+                        </tr>
+                        <tr>
+                            <td>Check Deposit</td>
+                            <td>$100,000</td>
+                            <td>Free</td>
+                        </tr>
+                        <tr>
+                            <td>Wire Transfer</td>
+                            <td>No limit</td>
+                            <td>$15</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">⏱️ Processing Times</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <strong>Cash Deposits:</strong><br>
+                    <small>Available immediately after confirmation</small>
+                </div>
+                <div class="mb-3">
+                    <strong>Check Deposits:</strong><br>
+                    <small>1-2 business days hold period may apply</small>
+                </div>
+                <div class="mb-3">
+                    <strong>Wire Transfers:</strong><br>
+                    <small>Same business day if received before 3 PM</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Cash Deposit Modal -->
+<div class="modal fade" id="cashDepositModal" tabindex="-1" aria-labelledby="cashDepositModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form asp-action="CashDeposit" method="post">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="cashDepositModalLabel">💵 Cash Deposit</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                    <div class="form-group mb-3">
+                        <label for="AccountId" class="form-label">Deposit to Account</label>
+                        <select asp-for="AccountId" class="form-select">
+                            <option value="">Select Account</option>
+                            @if (accounts != null)
+                            {
+                                @foreach (var account in accounts)
+                                {
+                                    <option value="@account.AccountId">
+                                        @account.AccountNumber - @account.AccountType (Balance: $@account.Balance.ToString("N2"))
+                                    </option>
+                                }
+                            }
+                        </select>
+                        <span asp-validation-for="AccountId" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label asp-for="Amount" class="form-label"></label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input asp-for="Amount" class="form-control" placeholder="0.00" step="0.01" />
+                        </div>
+                        <span asp-validation-for="Amount" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label asp-for="Description" class="form-label"></label>
+                        <textarea asp-for="Description" class="form-control" rows="2" placeholder="Optional description"></textarea>
+                        <span asp-validation-for="Description" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label asp-for="TransactionPassword" class="form-label"></label>
+                        <input asp-for="TransactionPassword" class="form-control" placeholder="Enter your transaction password" />
+                        <span asp-validation-for="TransactionPassword" class="text-danger"></span>
+                    </div>
+
+                    <div class="alert alert-info">
+                        <small>
+                            <strong>Note:</strong> Cash deposits are processed immediately and will be available in your account right away.
+                        </small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success">Process Deposit</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Check Deposit Modal -->
+<div class="modal fade" id="checkDepositModal" tabindex="-1" aria-labelledby="checkDepositModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form asp-action="CheckDeposit" method="post">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="checkDepositModalLabel">📄 Check Deposit</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group mb-3">
+                        <label for="AccountId" class="form-label">Deposit to Account</label>
+                        <select name="AccountId" class="form-select">
+                            <option value="">Select Account</option>
+                            @if (accounts != null)
+                            {
+                                @foreach (var account in accounts)
+                                {
+                                    <option value="@account.AccountId">
+                                        @account.AccountNumber - @account.AccountType (Balance: $@account.Balance.ToString("N2"))
+                                    </option>
+                                }
+                            }
+                        </select>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label for="Amount" class="form-label">Check Amount</label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input name="Amount" type="number" class="form-control" placeholder="0.00" step="0.01" />
+                        </div>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label for="CheckNumber" class="form-label">Check Number</label>
+                        <input name="CheckNumber" type="text" class="form-control" placeholder="Enter check number" />
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label for="CheckIssuer" class="form-label">Check Issuer/Bank (Optional)</label>
+                        <input name="CheckIssuer" type="text" class="form-control" placeholder="Bank or person issuing check" />
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label for="TransactionPassword" class="form-label">Transaction Password</label>
+                        <input name="TransactionPassword" type="password" class="form-control" placeholder="Enter your transaction password" />
+                    </div>
+
+                    <div class="alert alert-warning">
+                        <small>
+                            <strong>Hold Policy:</strong> Funds may be held for 1-2 business days while the check clears.
+                        </small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Process Check</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Wire Transfer Modal -->
+<div class="modal fade" id="wireTransferModal" tabindex="-1" aria-labelledby="wireTransferModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form asp-action="WireTransfer" method="post">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="wireTransferModalLabel">🌐 Incoming Wire Transfer</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group mb-3">
+                        <label for="AccountId" class="form-label">Deposit to Account</label>
+                        <select name="AccountId" class="form-select">
+                            <option value="">Select Account</option>
+                            @if (accounts != null)
+                            {
+                                @foreach (var account in accounts)
+                                {
+                                    <option value="@account.AccountId">
+                                        @account.AccountNumber - @account.AccountType (Balance: $@account.Balance.ToString("N2"))
+                                    </option>
+                                }
+                            }
+                        </select>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label for="Amount" class="form-label">Wire Amount</label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input name="Amount" type="number" class="form-control" placeholder="0.00" step="0.01" />
+                        </div>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label for="SenderName" class="form-label">Sender Name</label>
+                        <input name="SenderName" type="text" class="form-control" placeholder="Name of person/company sending wire" />
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label for="SenderBank" class="form-label">Sender Bank</label>
+                        <input name="SenderBank" type="text" class="form-control" placeholder="Bank sending the wire transfer" />
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label for="WireReference" class="form-label">Wire Reference (Optional)</label>
+                        <input name="WireReference" type="text" class="form-control" placeholder="Wire reference number" />
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label for="TransactionPassword" class="form-label">Transaction Password</label>
+                        <input name="TransactionPassword" type="password" class="form-control" placeholder="Enter your transaction password" />
+                    </div>
+
+                    <div class="alert alert-info">
+                        <small>
+                            <strong>Wire Fee:</strong> $15 processing fee applies to incoming wire transfers.
+                        </small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-info">Process Wire</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="mt-4">
+    <a asp-controller="Home" asp-action="Dashboard" class="btn btn-secondary">← Back to Dashboard</a>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

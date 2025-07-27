@@ -1,0 +1,107 @@
+@model IEnumerable<InternetBanking.Models.ApplicationUser>
+@{
+    ViewData["Title"] = "Manage Admins";
+    Layout = "_AdminLayout";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h3 class="mb-0">👥 Manage Admins</h3>
+                </div>
+                <div class="card-body">
+                    @if (TempData["SuccessMessage"] != null)
+                    {
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            @TempData["SuccessMessage"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    }
+
+                    @if (TempData["ErrorMessage"] != null)
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            @TempData["ErrorMessage"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    }
+
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>User ID</th>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Phone</th>
+                                    <th>Address</th>
+                                    <th>Date of Birth</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var admin in Model)
+                                {
+                                    <tr>
+                                        <td><strong>@admin.UserName</strong></td>
+                                        <td>@admin.FirstName @admin.LastName</td>
+                                        <td>@admin.Email</td>
+                                        <td>@admin.PhoneNumber</td>
+                                        <td>@admin.Address</td>
+                                        <td>@admin.DateOfBirth.ToShortDateString()</td>
+                                        <td>
+                                            @if (admin.IsAccountLocked)
+                                            {
+                                                <span class="badge bg-danger">🔒 Locked</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-success">✅ Active</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <button type="button" class="btn btn-warning btn-sm dropdown-toggle" data-bs-toggle="dropdown">
+                                                    Change Role
+                                                </button>
+                                                <ul class="dropdown-menu">
+                                                    <li><a class="dropdown-item" href="#" onclick="changeRole('@admin.Id', 'Admin')">Make Admin</a></li>
+                                                    <li><a class="dropdown-item" href="#" onclick="changeRole('@admin.Id', 'User')">Make User</a></li>
+                                                </ul>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+
+                    @if (!Model.Any())
+                    {
+                        <div class="alert alert-info">
+                            <strong>No admin users found.</strong> Register the first admin from the main admin panel.
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<form id="roleChangeForm" asp-action="ChangeUserRole" method="post" style="display: none;">
+    <input type="hidden" id="userId" name="userId" />
+    <input type="hidden" id="newRole" name="newRole" />
+</form>
+
+<script>
+    function changeRole(userId, newRole) {
+        if (confirm(`Are you sure you want to change this user's role to ${newRole}? They will be logged out immediately.`)) {
+            document.getElementById('userId').value = userId;
+            document.getElementById('newRole').value = newRole;
+            document.getElementById('roleChangeForm').submit();
+        }
+    }
+</script> 

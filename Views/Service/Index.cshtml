@@ -1,0 +1,205 @@
+﻿@{
+    ViewData["Title"] = "Banking Services";
+}
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="mb-0">🏦 Banking Services</h3>
+                <p class="mb-0 text-muted">Request various banking services online</p>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-4">
+                        <div class="card h-100 border-primary">
+                            <div class="card-body text-center">
+                                <div class="mb-3">
+                                    <i class="display-4">📖</i>
+                                </div>
+                                <h5 class="card-title">Cheque Book Request</h5>
+                                <p class="card-text">Request a new cheque book for your account</p>
+                                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#serviceModal"
+                                        data-service="Cheque Book Request">
+                                    Request Now
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 mb-4">
+                        <div class="card h-100 border-success">
+                            <div class="card-body text-center">
+                                <div class="mb-3">
+                                    <i class="display-4">🏠</i>
+                                </div>
+                                <h5 class="card-title">Address Change</h5>
+                                <p class="card-text">Update your registered address</p>
+                                <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#serviceModal"
+                                        data-service="Address Change">
+                                    Request Now
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 mb-4">
+                        <div class="card h-100 border-warning">
+                            <div class="card-body text-center">
+                                <div class="mb-3">
+                                    <i class="display-4">🛑</i>
+                                </div>
+                                <h5 class="card-title">Stop Payment</h5>
+                                <p class="card-text">Stop payment on issued cheques</p>
+                                <button class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#serviceModal"
+                                        data-service="Stop Payment">
+                                    Request Now
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 mb-4">
+                        <div class="card h-100 border-info">
+                            <div class="card-body text-center">
+                                <div class="mb-3">
+                                    <i class="display-4">💳</i>
+                                </div>
+                                <h5 class="card-title">Debit Card Request</h5>
+                                <p class="card-text">Request a new or replacement debit card</p>
+                                <button class="btn btn-info" data-bs-toggle="modal" data-bs-target="#serviceModal"
+                                        data-service="Debit Card Request">
+                                    Request Now
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 mb-4">
+                        <div class="card h-100 border-secondary">
+                            <div class="card-body text-center">
+                                <div class="mb-3">
+                                    <i class="display-4">📞</i>
+                                </div>
+                                <h5 class="card-title">Phone Number Update</h5>
+                                <p class="card-text">Update your registered phone number</p>
+                                <button class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#serviceModal"
+                                        data-service="Phone Number Update">
+                                    Request Now
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 mb-4">
+                        <div class="card h-100 border-dark">
+                            <div class="card-body text-center">
+                                <div class="mb-3">
+                                    <i class="display-4">❓</i>
+                                </div>
+                                <h5 class="card-title">Other Request</h5>
+                                <p class="card-text">Any other banking service request</p>
+                                <button class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#serviceModal"
+                                        data-service="Other Request">
+                                    Request Now
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">📋 Request Status</h5>
+            </div>
+            <div class="card-body">
+                <p>Track your service requests and view their current status.</p>
+                <a asp-action="MyRequests" class="btn btn-outline-primary w-100">
+                    View My Requests
+                </a>
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6 class="mb-0">⏱️ Processing Time</h6>
+            </div>
+            <div class="card-body">
+                <small>
+                    <strong>Cheque Book:</strong> 3-5 business days<br>
+                    <strong>Address Change:</strong> 1-2 business days<br>
+                    <strong>Stop Payment:</strong> Immediate<br>
+                    <strong>Debit Card:</strong> 7-10 business days<br>
+                    <strong>Phone Update:</strong> 1 business day
+                </small>
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6 class="mb-0">📞 Need Help?</h6>
+            </div>
+            <div class="card-body">
+                <small>
+                    <strong>Customer Service:</strong><br>
+                    Phone: 1-800-SECURE-BANK<br>
+                    Email: support@securebank.com<br>
+                    Hours: Mon-Fri 8AM-8PM
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Service Request Modal -->
+<div class="modal fade" id="serviceModal" tabindex="-1" aria-labelledby="serviceModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form asp-action="RequestService" method="post">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="serviceModalLabel">Service Request</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="requestType" class="form-label">Service Type</label>
+                        <input type="text" class="form-control" id="requestType" name="requestType" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea class="form-control" id="description" name="description" rows="4"
+                                  placeholder="Please provide details about your request..."></textarea>
+                    </div>
+                    <div class="alert alert-info">
+                        <small>
+                            <strong>Note:</strong> Your request will be processed within the standard timeframe.
+                            You will receive updates via email and can track the status in "My Requests" section.
+                        </small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Submit Request</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var serviceModal = document.getElementById('serviceModal');
+            serviceModal.addEventListener('show.bs.modal', function (event) {
+                var button = event.relatedTarget;
+                var service = button.getAttribute('data-service');
+                var requestTypeInput = serviceModal.querySelector('#requestType');
+                requestTypeInput.value = service;
+            });
+        });
+    </script>
+}

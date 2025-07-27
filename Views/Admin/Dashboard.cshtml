@@ -1,0 +1,37 @@
+@{
+    ViewData["Title"] = "Admin Dashboard";
+    Layout = "_AdminLayout";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h3 class="mb-0">🛡️ Admin Dashboard</h3>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-success" role="alert">
+                        <strong>Welcome!</strong> You are now logged in as an administrator.
+                    </div>
+                    
+                    <h5 class="mb-3">📋 Admin Functions:</h5>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>👥 Manage Admins</span>
+                            <a href="/admin/manage-admins" class="btn btn-primary btn-sm">Access</a>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>📞 View Service Requests</span>
+                            <a href="/admin/service-requests" class="btn btn-info btn-sm">Access</a>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>🔍 Run Custom Queries</span>
+                            <a href="/admin/custom-queries" class="btn btn-warning btn-sm">Access</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div> 

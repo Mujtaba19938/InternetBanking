@@ -1,0 +1,72 @@
+﻿@model InternetBanking.Models.ApplicationUser
+@{
+    ViewData["Title"] = "Profile";
+}
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="mb-0">👤 Profile Information</h3>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-sm-3"><strong>Name:</strong></div>
+                    <div class="col-sm-9">@Model.FirstName @Model.LastName</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-sm-3"><strong>User ID:</strong></div>
+                    <div class="col-sm-9">@Model.UserName</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-sm-3"><strong>Email:</strong></div>
+                    <div class="col-sm-9">@Model.Email</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-sm-3"><strong>Phone:</strong></div>
+                    <div class="col-sm-9">@Model.PhoneNumber</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-sm-3"><strong>Address:</strong></div>
+                    <div class="col-sm-9">@Model.Address</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-sm-3"><strong>Date of Birth:</strong></div>
+                    <div class="col-sm-9">@Model.DateOfBirth.ToString("MMM dd, yyyy")</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">🔧 Account Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a asp-action="ChangeTransactionPassword" class="btn btn-outline-primary">
+                        🔑 Change Transaction Password
+                    </a>
+                    <a href="#" class="btn btn-outline-primary">
+                        ✏️ Update Profile
+                    </a>
+                    <a href="#" class="btn btn-outline-primary">
+                        🔒 Change Login Password
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6 class="mb-0">⚠️ Important Notice</h6>
+            </div>
+            <div class="card-body">
+                <small>
+                    <strong>Default Transaction Password:</strong> TXN123<br>
+                    Please change your transaction password immediately for security.
+                </small>
+            </div>
+        </div>
+    </div>
+</div>

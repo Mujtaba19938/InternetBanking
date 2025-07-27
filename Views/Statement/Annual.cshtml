@@ -1,0 +1,218 @@
+﻿@model IEnumerable<InternetBanking.Models.Transaction>
+@{
+    ViewData["Title"] = "Annual Statement";
+    var account = ViewBag.Account as InternetBanking.Models.Account;
+    var year = ViewBag.Year as int? ?? DateTime.Now.Year;
+    var startDate = ViewBag.StartDate as DateTime? ?? DateTime.Now;
+    var endDate = ViewBag.EndDate as DateTime? ?? DateTime.Now;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2>Annual Statement</h2>
+        <p class="text-muted mb-0">Year @year - Account: @account?.AccountNumber</p>
+    </div>
+    <div>
+        <button onclick="window.print()" class="btn btn-outline-primary">🖨️ Print Statement</button>
+    </div>
+</div>
+
+<!-- Statement Header -->
+<div class="card mb-4">
+    <div class="card-header bg-success text-white">
+        <div class="row">
+            <div class="col-md-6">
+                <h4 class="mb-0">🏦 SecureBank</h4>
+                <small>Secure Internet Banking</small>
+            </div>
+            <div class="col-md-6 text-end">
+                <h5 class="mb-0">ANNUAL STATEMENT</h5>
+                <small>Year @year</small>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <h6>Account Information</h6>
+                <p class="mb-1"><strong>Account Number:</strong> @account?.AccountNumber</p>
+                <p class="mb-1"><strong>Account Type:</strong> @account?.AccountType</p>
+                <p class="mb-1"><strong>Account Holder:</strong> @account?.User?.FirstName @account?.User?.LastName</p>
+                <p class="mb-0"><strong>Statement Period:</strong> @startDate??.ToString("MMM dd, yyyy") - @endDate??.ToString("MMM dd, yyyy")</p>
+            </div>
+            <div class="col-md-6">
+                <h6>Annual Summary</h6>
+                <p class="mb-1"><strong>Current Balance:</strong> $@account?.Balance.ToString("N2")</p>
+                <p class="mb-1"><strong>Total Transactions:</strong> @Model.Count()</p>
+                <p class="mb-1"><strong>Total Debits:</strong> $@Model.Where(t => t.FromAccountId == account?.AccountId).Sum(t => t.Amount).ToString("N2")</p>
+                <p class="mb-0"><strong>Total Credits:</strong> $@Model.Where(t => t.ToAccountId == account?.AccountId).Sum(t => t.Amount).ToString("N2")</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Year Selector -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3 align-items-end">
+            <input type="hidden" name="accountId" value="@account?.AccountId" />
+            <div class="col-md-6">
+                <label for="year" class="form-label">Select Year</label>
+                <select name="year" class="form-select">
+                    @for (int i = DateTime.Now.Year; i >= DateTime.Now.Year - 10; i--)
+                    {
+                        <option value="@i" selected="@(i == year)">@i</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-6">
+                <button type="submit" class="btn btn-success">View Annual Statement</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Monthly Breakdown -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0">📈 Monthly Breakdown</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            @for (int month = 1; month <= 12; month++)
+            {
+                var monthTransactions = Model.Where(t => t.TransactionDate.Month == month);
+                var monthDebits = monthTransactions.Where(t => t.FromAccountId == account?.AccountId).Sum(t => t.Amount);
+                var monthCredits = monthTransactions.Where(t => t.ToAccountId == account?.AccountId).Sum(t => t.Amount);
+                var monthName = new DateTime(year, month, 1).ToString("MMM");
+
+                <div class="col-md-3 mb-3">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <h6 class="card-title">@monthName @year</h6>
+                            <p class="mb-1"><small>Transactions: @monthTransactions.Count()</small></p>
+                            <p class="mb-1 text-danger"><small>Debits: $@monthDebits.ToString("N2")</small></p>
+                            <p class="mb-2 text-success"><small>Credits: $@monthCredits.ToString("N2")</small></p>
+                            <a asp-controller="Statement" asp-action="Monthly"
+                               asp-route-accountId="@account?.AccountId"
+                               asp-route-month="@month" asp-route-year="@year"
+                               class="btn btn-outline-primary btn-sm">View Details</a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Transaction Summary -->
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">📊 Transaction Summary</h5>
+    </div>
+    <div class="card-body p-0">
+        @if (Model.Any())
+        {
+            <div class="table-responsive">
+                <table class="table table-sm mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Month</th>
+                            <th>Transactions</th>
+                            <th>Total Debits</th>
+                            <th>Total Credits</th>
+                            <th>Net Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (int month = 1; month <= 12; month++)
+                        {
+                            var monthTransactions = Model.Where(t => t.TransactionDate.Month == month);
+                            if (monthTransactions.Any())
+                            {
+                                var monthDebits = monthTransactions.Where(t => t.FromAccountId == account?.AccountId).Sum(t => t.Amount);
+                                var monthCredits = monthTransactions.Where(t => t.ToAccountId == account?.AccountId).Sum(t => t.Amount);
+                                var netAmount = monthCredits - monthDebits;
+                                var monthName = new DateTime(year, month, 1).ToString("MMMM");
+
+                                <tr>
+                                    <td><strong>@monthName</strong></td>
+                                    <td>@monthTransactions.Count()</td>
+                                    <td class="text-danger">$@monthDebits.ToString("N2")</td>
+                                    <td class="text-success">$@monthCredits.ToString("N2")</td>
+                                    <td class="@(netAmount >= 0 ? "text-success" : "text-danger")">
+                                        $@netAmount.ToString("N2")
+                                    </td>
+                                </tr>
+                            }
+                        }
+
+                        @{
+                            var totalDebits = Model.Where(t => t.FromAccountId == account?.AccountId).Sum(t => t.Amount);
+                            var totalCredits = Model.Where(t => t.ToAccountId == account?.AccountId).Sum(t => t.Amount);
+                            var totalNet = totalCredits - totalDebits;
+                        }
+
+                        <tr class="table-info">
+                            <td><strong>TOTAL</strong></td>
+                            <td><strong>@Model.Count()</strong></td>
+                            <td class="text-danger"><strong>$@totalDebits.ToString("N2")</strong></td>
+                            <td class="text-success"><strong>$@totalCredits.ToString("N2")</strong></td>
+                            <td class="@(totalNet >= 0 ? "text-success" : "text-danger")">
+                                <strong>$@totalNet.ToString("N2")</strong>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="text-center py-5">
+                <div class="mb-3">
+                    <i class="display-4">📭</i>
+                </div>
+                <h5>No Transactions</h5>
+                <p class="text-muted">No transactions found for year @year</p>
+            </div>
+        }
+    </div>
+</div>
+
+<div class="mt-4 d-print-none">
+    <div class="row">
+        <div class="col-md-6">
+            <a asp-controller="Home" asp-action="AccountDetails" asp-route-id="@account?.AccountId"
+               class="btn btn-secondary">← Back to Account</a>
+        </div>
+        <div class="col-md-6 text-end">
+            <a asp-controller="Statement" asp-action="Monthly" asp-route-accountId="@account?.AccountId"
+               class="btn btn-outline-success">📄 View Monthly Statement</a>
+        </div>
+    </div>
+</div>
+
+<style>
+    @@media print {
+        .d-print-none
+
+    {
+        display: none !important;
+    }
+
+    .card {
+        border: none !important;
+        box-shadow: none !important;
+    }
+
+    .card-header {
+        background-color: #28a745 !important;
+        -webkit-print-color-adjust: exact;
+    }
+
+    body {
+        font-size: 12px;
+    }
+
+    }
+</style>

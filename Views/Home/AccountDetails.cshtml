@@ -1,0 +1,114 @@
+﻿@model InternetBanking.Models.Account
+@{
+    ViewData["Title"] = "Account Details";
+}
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="mb-0">💳 Account Details</h3>
+            </div>
+            <div class="card-body">
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="balance-card card">
+                            <div class="card-body text-center">
+                                <h5 class="card-title">Current Balance</h5>
+                                <h2 class="mb-0">$@Model.Balance.ToString("N2")</h2>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-body">
+                                <h6 class="card-title">Account Information</h6>
+                                <p class="mb-1"><strong>Account Number:</strong> @Model.AccountNumber</p>
+                                <p class="mb-1"><strong>Account Type:</strong> @Model.AccountType</p>
+                                <p class="mb-1">
+                                    <strong>Status:</strong>
+                                    <span class="badge bg-success">@(Model.IsActive ? "Active" : "Inactive")</span>
+                                </p>
+                                <p class="mb-0"><strong>Opened:</strong> @Model.CreatedDate.ToString("MMM dd, yyyy")</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-12">
+                        <h5>Quick Actions</h5>
+                        <div class="row">
+                            <div class="col-md-3 mb-2">
+                                <a asp-controller="Transaction" asp-action="FundTransfer"
+                                   class="btn btn-primary w-100">
+                                    💸 Transfer Funds
+                                </a>
+                            </div>
+                            <div class="col-md-3 mb-2">
+                                <a asp-controller="Home" asp-action="TransactionHistory"
+                                   asp-route-accountId="@Model.AccountId"
+                                   class="btn btn-outline-primary w-100">
+                                    📊 Transaction History
+                                </a>
+                            </div>
+                            <div class="col-md-3 mb-2">
+                                <a asp-controller="Statement" asp-action="Monthly"
+                                   asp-route-accountId="@Model.AccountId"
+                                   class="btn btn-outline-primary w-100">
+                                    📄 Monthly Statement
+                                </a>
+                            </div>
+                            <div class="col-md-3 mb-2">
+                                <a asp-controller="Statement" asp-action="Annual"
+                                   asp-route-accountId="@Model.AccountId"
+                                   class="btn btn-outline-primary w-100">
+                                    📅 Annual Statement
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">📈 Account Summary</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <small class="text-muted">Available Balance</small>
+                    <h4 class="text-success">$@Model.Balance.ToString("N2")</h4>
+                </div>
+                <div class="mb-3">
+                    <small class="text-muted">Account Holder</small>
+                    <p class="mb-0">@Model.User?.FirstName @Model.User?.LastName</p>
+                </div>
+                <div class="mb-3">
+                    <small class="text-muted">Last Activity</small>
+                    <p class="mb-0">@DateTime.Now.ToString("MMM dd, yyyy")</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6 class="mb-0">🔒 Security</h6>
+            </div>
+            <div class="card-body">
+                <small>
+                    • Transaction password required for transfers<br>
+                    • All activities are logged and monitored<br>
+                    • Report suspicious activity immediately
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="mt-3">
+    <a asp-controller="Home" asp-action="Dashboard" class="btn btn-secondary">← Back to Dashboard</a>
+</div>

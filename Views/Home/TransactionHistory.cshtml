@@ -1,0 +1,139 @@
+﻿@model IEnumerable<InternetBanking.Models.Transaction>
+@{
+    ViewData["Title"] = "Transaction History";
+    var account = ViewBag.Account as InternetBanking.Models.Account;
+    var count = ViewBag.Count as int? ?? 10;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2>Transaction History</h2>
+        <p class="text-muted mb-0">Account: @account?.AccountNumber - @account?.AccountType</p>
+    </div>
+    <div>
+        <div class="btn-group" role="group">
+            <a asp-action="TransactionHistory" asp-route-accountId="@account?.AccountId" asp-route-count="10"
+               class="btn @(count == 10 ? "btn-primary" : "btn-outline-primary") btn-sm">Last 10</a>
+            <a asp-action="TransactionHistory" asp-route-accountId="@account?.AccountId" asp-route-count="25"
+               class="btn @(count == 25 ? "btn-primary" : "btn-outline-primary") btn-sm">Last 25</a>
+            <a asp-action="TransactionHistory" asp-route-accountId="@account?.AccountId" asp-route-count="50"
+               class="btn @(count == 50 ? "btn-primary" : "btn-outline-primary") btn-sm">Last 50</a>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <div class="row align-items-center">
+            <div class="col">
+                <h5 class="mb-0">📊 Recent Transactions</h5>
+            </div>
+            <div class="col-auto">
+                <span class="badge bg-info">@Model.Count() transactions</span>
+            </div>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        @if (Model.Any())
+        {
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Date</th>
+                            <th>Description</th>
+                            <th>Reference</th>
+                            <th>Amount</th>
+                            <th>Type</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var transaction in Model)
+                        {
+                            var isCredit = transaction.ToAccountId == account?.AccountId;
+                            var amountClass = isCredit ? "text-success" : "text-danger";
+                            var amountPrefix = isCredit ? "+" : "-";
+
+                            <tr>
+                                <td>
+                                    <small>
+                                        @transaction.TransactionDate.ToString("MMM dd, yyyy")<br>
+                                        <span class="text-muted">@transaction.TransactionDate.ToString("HH:mm")</span>
+                                    </small>
+                                </td>
+                                <td>
+                                    <div>
+                                        <strong>@transaction.TransactionType</strong>
+                                        @if (!string.IsNullOrEmpty(transaction.Description))
+                                        {
+                                            <br>
+
+                                            <small class="text-muted">@transaction.Description</small>
+                                        }
+                                        @if (isCredit)
+                                        {
+                                            <br>
+
+                                            <small class="text-muted">From: @transaction.FromAccount?.AccountNumber</small>
+                                        }
+                                        else
+                                        {
+                                            <br>
+
+                                            <small class="text-muted">To: @transaction.ToAccountNumber</small>
+                                        }
+                                    </div>
+                                </td>
+                                <td>
+                                    <small class="font-monospace">@transaction.ReferenceNumber</small>
+                                </td>
+                                <td>
+                                    <span class="@amountClass fw-bold">
+                                        @amountPrefix$@transaction.Amount.ToString("N2")
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge @(isCredit ? "bg-success" : "bg-primary")">
+                                        @(isCredit ? "Credit" : "Debit")
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge @(transaction.Status == "Completed" ? "bg-success" : transaction.Status == "Pending" ? "bg-warning" : "bg-danger")">
+                                        @transaction.Status
+                                    </span>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="text-center py-5">
+                <div class="mb-3">
+                    <i class="display-4">📭</i>
+                </div>
+                <h5>No Transactions Found</h5>
+                <p class="text-muted">No transactions have been made on this account yet.</p>
+                <a asp-controller="Transaction" asp-action="FundTransfer" class="btn btn-primary">
+                    Make Your First Transfer
+                </a>
+            </div>
+        }
+    </div>
+</div>
+
+<div class="mt-4">
+    <div class="row">
+        <div class="col-md-6">
+            <a asp-controller="Home" asp-action="AccountDetails" asp-route-id="@account?.AccountId"
+               class="btn btn-secondary">← Back to Account Details</a>
+        </div>
+        <div class="col-md-6 text-end">
+            <a asp-controller="Statement" asp-action="Monthly" asp-route-accountId="@account?.AccountId"
+               class="btn btn-outline-primary">📄 Generate Statement</a>
+        </div>
+    </div>
+</div>

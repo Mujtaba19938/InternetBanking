@@ -1,0 +1,74 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+
+<div class="text-center">
+
+    <h1 class="display-4">Welcome to Secure Internet Banking</h1>
+    <p class="lead">Your trusted partner for secure online banking services</p>
+</div>
+
+<div class="row mt-5">
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <h5 class="card-title">🔒 Secure Login</h5>
+                <p class="card-text">Access your accounts with our multi-layer security system including account lockout protection.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <h5 class="card-title">💰 Fund Transfers</h5>
+                <p class="card-text">Transfer funds securely between accounts with transaction password verification.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <h5 class="card-title">📊 Account Management</h5>
+                <p class="card-text">View balances, transaction history, and manage your banking services online.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">🛡️ Security Features</h5>
+                <ul class="list-unstyled">
+                    <li>✓ Account lockout after 3 failed attempts</li>
+                    <li>✓ Separate transaction passwords</li>
+                    <li>✓ Encrypted data transmission</li>
+                    <li>✓ Session timeout protection</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">🏦 Banking Services</h5>
+                <ul class="list-unstyled">
+                    <li>✓ Balance inquiry</li>
+                    <li>✓ Fund transfers</li>
+                    <li>✓ Transaction history</li>
+                    <li>✓ Service requests</li>
+                    <li>✓ Account statements</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (!User.Identity.IsAuthenticated)
+{
+    <div class="text-center mt-5">
+        <a asp-controller="Account" asp-action="Login" class="btn btn-primary btn-lg me-3">Login to Your Account</a>
+        <a asp-controller="Account" asp-action="Register" class="btn btn-outline-primary btn-lg">Open New Account</a>
+    </div>
+}

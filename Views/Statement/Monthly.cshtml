@@ -1,0 +1,231 @@
+﻿@model IEnumerable<InternetBanking.Models.Transaction>
+@{
+    ViewData["Title"] = "Monthly Statement";
+    var account = ViewBag.Account as InternetBanking.Models.Account;
+    var month = ViewBag.Month as int? ?? DateTime.Now.Month;
+    var year = ViewBag.Year as int? ?? DateTime.Now.Year;
+    var startDate = ViewBag.StartDate as DateTime? ?? DateTime.Now;
+    var endDate = ViewBag.EndDate as DateTime? ?? DateTime.Now;
+
+    var monthName = new DateTime(year, month, 1).ToString("MMMM yyyy");
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2>Monthly Statement</h2>
+        <p class="text-muted mb-0">@monthName - Account: @account?.AccountNumber</p>
+    </div>
+    <div>
+        <button onclick="window.print()" class="btn btn-outline-primary">🖨️ Print Statement</button>
+    </div>
+</div>
+
+<!-- Statement Header -->
+<div class="card mb-4" id="statement-content">
+    <div class="card-header bg-primary text-white">
+        <div class="row">
+            <div class="col-md-6">
+                <h4 class="mb-0">🏦 SecureBank</h4>
+                <small>Secure Internet Banking</small>
+            </div>
+            <div class="col-md-6 text-end">
+                <h5 class="mb-0">MONTHLY STATEMENT</h5>
+                <small>@monthName</small>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <h6>Account Information</h6>
+                <p class="mb-1"><strong>Account Number:</strong> @account?.AccountNumber</p>
+                <p class="mb-1"><strong>Account Type:</strong> @account?.AccountType</p>
+                <p class="mb-1"><strong>Account Holder:</strong> @account?.User?.FirstName @account?.User?.LastName</p>
+                <p class="mb-0"><strong>Statement Period:</strong> @startDate.ToString("MMM dd, yyyy") - @endDate.ToString("MMM dd, yyyy")</p>
+            </div>
+            <div class="col-md-6">
+                <h6>Balance Summary</h6>
+                <p class="mb-1"><strong>Current Balance:</strong> $@account?.Balance.ToString("N2")</p>
+                <p class="mb-1"><strong>Total Transactions:</strong> @Model.Count()</p>
+                <p class="mb-1"><strong>Total Debits:</strong> $@Model.Where(t => t.FromAccountId == account?.AccountId).Sum(t => t.Amount).ToString("N2")</p>
+                <p class="mb-0"><strong>Total Credits:</strong> $@Model.Where(t => t.ToAccountId == account?.AccountId).Sum(t => t.Amount).ToString("N2")</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Month/Year Selector -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3 align-items-end">
+            <input type="hidden" name="accountId" value="@account?.AccountId" />
+            <div class="col-md-4">
+                <label for="month" class="form-label">Month</label>
+                <select name="month" class="form-select">
+                    @for (int i = 1; i <= 12; i++)
+                    {
+                        var monthText = new DateTime(2024, i, 1).ToString("MMMM");
+                        <option value="@i" selected="@(i == month)">@monthText</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label for="year" class="form-label">Year</label>
+                <select name="year" class="form-select">
+                    @for (int i = DateTime.Now.Year; i >= DateTime.Now.Year - 5; i--)
+                    {
+                        <option value="@i" selected="@(i == year)">@i</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-4">
+                <button type="submit" class="btn btn-primary">View Statement</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Transaction Details -->
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">📊 Transaction Details</h5>
+    </div>
+    <div class="card-body p-0">
+        @if (Model.Any())
+        {
+            <div class="table-responsive">
+                <table class="table table-sm mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Date</th>
+                            <th>Description</th>
+                            <th>Reference</th>
+                            <th>Debit</th>
+                            <th>Credit</th>
+                            <th>Balance</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @{
+                            decimal runningBalance = account?.Balance ?? 0;
+                            // Calculate opening balance by working backwards
+                            var totalDebits = Model.Where(t => t.FromAccountId == account?.AccountId).Sum(t => t.Amount);
+                            var totalCredits = Model.Where(t => t.ToAccountId == account?.AccountId).Sum(t => t.Amount);
+                            var openingBalance = runningBalance - totalCredits + totalDebits;
+                        }
+
+                        <tr class="table-info">
+                            <td><strong>@startDate.ToString("MMM dd, yyyy")</strong></td>
+                            <td><strong>Opening Balance</strong></td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td><strong>$@openingBalance.ToString("N2")</strong></td>
+                        </tr>
+
+                        @{
+                            runningBalance = openingBalance;
+                        }
+
+                        @foreach (var transaction in Model)
+                        {
+                            var isCredit = transaction.ToAccountId == account?.AccountId;
+                            if (isCredit)
+                            {
+                                runningBalance += transaction.Amount;
+                            }
+                            else
+                            {
+                                runningBalance -= transaction.Amount;
+                            }
+
+                            <tr>
+                                <td>@transaction.TransactionDate.ToString("MMM dd, yyyy")</td>
+                                <td>
+                                    @transaction.TransactionType
+                                    @if (!string.IsNullOrEmpty(transaction.Description))
+                                    {
+                                        <br>
+
+                                        <small class="text-muted">@transaction.Description</small>
+                                    }
+                                </td>
+                                <td><small class="font-monospace">@transaction.ReferenceNumber</small></td>
+                                <td>
+                                    @if (!isCredit)
+                                    {
+                                        <span class="text-danger">$@transaction.Amount.ToString("N2")</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (isCredit)
+                                    {
+                                        <span class="text-success">$@transaction.Amount.ToString("N2")</span>
+                                    }
+                                </td>
+                                <td>$@runningBalance.ToString("N2")</td>
+                            </tr>
+                        }
+
+                        <tr class="table-info">
+                            <td><strong>@endDate.ToString("MMM dd, yyyy")</strong></td>
+                            <td><strong>Closing Balance</strong></td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td><strong>$@runningBalance.ToString("N2")</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="text-center py-5">
+                <div class="mb-3">
+                    <i class="display-4">📭</i>
+                </div>
+                <h5>No Transactions</h5>
+                <p class="text-muted">No transactions found for @monthName</p>
+            </div>
+        }
+    </div>
+</div>
+
+<div class="mt-4 d-print-none">
+    <div class="row">
+        <div class="col-md-6">
+            <a asp-controller="Home" asp-action="AccountDetails" asp-route-id="@account?.AccountId"
+               class="btn btn-secondary">← Back to Account</a>
+        </div>
+        <div class="col-md-6 text-end">
+            <a asp-action="Annual" asp-route-accountId="@account?.AccountId" asp-route-year="@year"
+               class="btn btn-outline-primary">📅 View Annual Statement</a>
+        </div>
+    </div>
+</div>
+
+<style>
+    @@media print {
+        .d-print-none
+
+    {
+        display: none !important;
+    }
+
+    .card {
+        border: none !important;
+        box-shadow: none !important;
+    }
+
+    .card-header {
+        background-color: #007bff !important;
+        -webkit-print-color-adjust: exact;
+    }
+
+    body {
+        font-size: 12px;
+    }
+
+    }
+</style>

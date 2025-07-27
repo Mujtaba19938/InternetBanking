@@ -1,0 +1,87 @@
+﻿@model InternetBanking.Models.ViewModels.FundTransferViewModel
+@{
+    ViewData["Title"] = "Fund Transfer";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="mb-0">💸 Fund Transfer</h3>
+            </div>
+            <div class="card-body">
+                <form asp-action="FundTransfer" method="post">
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                    <div class="form-group mb-3">
+                        <label for="FromAccountId" class="form-label">From Account</label>
+                        <select asp-for="FromAccountId" class="form-select">
+                            <option value="">Select Account</option>
+                            @if (Model.FromAccounts != null)
+                            {
+                                @foreach (var account in Model.FromAccounts)
+                                {
+                                    <option value="@account.AccountId">
+                                        @account.AccountNumber - @account.AccountType (Balance: $@account.Balance.ToString("N2"))
+                                    </option>
+                                }
+                            }
+                        </select>
+                        <span asp-validation-for="FromAccountId" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label asp-for="ToAccountNumber" class="form-label"></label>
+                        <input asp-for="ToAccountNumber" class="form-control" placeholder="Enter recipient account number" />
+                        <span asp-validation-for="ToAccountNumber" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label asp-for="Amount" class="form-label"></label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input asp-for="Amount" class="form-control" placeholder="0.00" step="0.01" />
+                        </div>
+                        <span asp-validation-for="Amount" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label asp-for="Description" class="form-label">Description (Optional)</label>
+                        <textarea asp-for="Description" class="form-control" rows="3" placeholder="Enter transfer description"></textarea>
+                        <span asp-validation-for="Description" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group mb-4">
+                        <label asp-for="TransactionPassword" class="form-label"></label>
+                        <input asp-for="TransactionPassword" class="form-control" placeholder="Enter your transaction password" />
+                        <span asp-validation-for="TransactionPassword" class="text-danger"></span>
+                        <small class="form-text text-muted">This is different from your login password</small>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a asp-controller="Home" asp-action="Dashboard" class="btn btn-secondary me-md-2">Cancel</a>
+                        <button type="submit" class="btn btn-primary">Transfer Funds</button>
+                    </div>
+                </form>
+
+                <div class="mt-4">
+                    <div class="alert alert-warning">
+                        <h6>⚠️ Important:</h6>
+                        <small>
+                            • Verify the recipient account number carefully<br>
+                            • Ensure you have sufficient balance<br>
+                            • Transaction password is required for security<br>
+                            • All transfers are processed immediately
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

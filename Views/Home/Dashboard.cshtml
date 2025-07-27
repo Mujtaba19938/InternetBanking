@@ -1,0 +1,68 @@
+﻿@model IEnumerable<InternetBanking.Models.Account>
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Account Dashboard</h2>
+    <div class="text-muted">
+        <small>Last Login: @DateTime.Now.ToString("MMM dd, yyyy HH:mm")</small>
+    </div>
+</div>
+
+<div class="row">
+    @foreach (var account in Model)
+    {
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card balance-card">
+                <div class="card-body">
+                    <h5 class="card-title">@account.AccountType Account</h5>
+                    <p class="card-text">
+                        <small>Account Number: @account.AccountNumber</small>
+                    </p>
+                    <h3 class="mb-3">$@account.Balance.ToString("N2")</h3>
+                    <div class="d-grid gap-2">
+                        <a asp-controller="Home" asp-action="AccountDetails" asp-route-id="@account.AccountId"
+                           class="btn btn-light btn-sm">View Details</a>
+                        <a asp-controller="Home" asp-action="TransactionHistory" asp-route-accountId="@account.AccountId"
+                           class="btn btn-outline-light btn-sm">Transaction History</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 mb-2">
+                        <a asp-controller="Transaction" asp-action="FundTransfer" class="btn btn-primary w-100">
+                            💸 Fund Transfer
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <a asp-controller="Service" asp-action="Index" class="btn btn-outline-primary w-100">
+                            📋 Service Requests
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <a asp-controller="Service" asp-action="MyRequests" class="btn btn-outline-primary w-100">
+                            📄 My Requests
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <a href="#" class="btn btn-outline-primary w-100">
+                            ❓ Help & Support
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
