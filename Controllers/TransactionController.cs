@@ -71,11 +71,18 @@ namespace InternetBanking.Controllers
                         return View(model);
                     }
 
+                    // Check if T-Pin is set
+                    if (string.IsNullOrEmpty(fromAccount.TransactionPassword))
+                    {
+                        ModelState.AddModelError("", "T-Pin not set. Please set your T-Pin from your profile first.");
+                        return View(model);
+                    }
+
                     // Validate transaction password
                     var hashedPassword = HashPassword(model.TransactionPassword);
                     if (fromAccount.TransactionPassword != hashedPassword)
                     {
-                        ModelState.AddModelError("TransactionPassword", "Invalid transaction password.");
+                        ModelState.AddModelError("TransactionPassword", "Invalid T-Pin.");
                         return View(model);
                     }
 

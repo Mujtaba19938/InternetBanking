@@ -146,6 +146,7 @@ namespace InternetBanking.Controllers
                     await _signInManager.SignInAsync(user, isPersistent: false);
 
                     TempData["SuccessMessage"] = "Registration successful! Your accounts have been created.";
+                    TempData["ShowTPinSetup"] = "true"; // Flag to show T-Pin setup popup
                     return RedirectToAction("Dashboard", "Home");
                 }
 
@@ -164,9 +165,7 @@ namespace InternetBanking.Controllers
             var savingsAccountNumber = GenerateAccountNumber("SAV");
             var checkingAccountNumber = GenerateAccountNumber("CHK");
 
-            // Create default transaction password (in production, this should be set by user)
-            var defaultTransactionPassword = HashPassword("TXN123"); // Default password
-
+            // Create accounts without transaction password - user must set it
             var accounts = new List<Account>
             {
                 new Account
@@ -175,7 +174,7 @@ namespace InternetBanking.Controllers
                     AccountNumber = savingsAccountNumber,
                     AccountType = "Savings",
                     Balance = 0.00m, // Starting balance
-                    TransactionPassword = defaultTransactionPassword,
+                    TransactionPassword = "", // Empty - user must set T-Pin
                     IsActive = true
                 },
                 new Account
@@ -184,7 +183,7 @@ namespace InternetBanking.Controllers
                     AccountNumber = checkingAccountNumber,
                     AccountType = "Checking",
                     Balance = 0.00m, // Starting balance
-                    TransactionPassword = defaultTransactionPassword,
+                    TransactionPassword = "", // Empty - user must set T-Pin
                     IsActive = true
                 }
             };

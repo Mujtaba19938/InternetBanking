@@ -116,6 +116,77 @@ namespace InternetBanking.Controllers
             return RedirectToAction("Index");
         }
 
+        [HttpGet]
+        public async Task<IActionResult> ResetTransactionPassword()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            // Check if user is an admin and redirect them
+            if (await _userManager.IsInRoleAsync(user, "Admin"))
+            {
+                return RedirectToAction("Index", "Admin");
+            }
+
+            var accounts = await _context.Accounts
+                .Where(a => a.UserId == user.Id && a.IsActive)
+                .ToListAsync();
+
+            ViewBag.Accounts = accounts;
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ResetTransactionPassword(int accountId, string newPassword, string confirmPassword)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            // Check if user is an admin and redirect them
+            if (await _userManager.IsInRoleAsync(user, "Admin"))
+            {
+                return RedirectToAction("Index", "Admin");
+            }
+
+            if (newPassword != confirmPassword)
+            {
+                ModelState.AddModelError("", "New password and confirmation do not match.");
+                await LoadAccountsForView(user.Id);
+                return View();
+            }
+
+            if (string.IsNullOrWhiteSpace(newPassword) || newPassword.Length < 4)
+            {
+                ModelState.AddModelError("", "T-Pin must be at least 4 characters long.");
+                await LoadAccountsForView(user.Id);
+                return View();
+            }
+
+            var account = await _context.Accounts
+                .FirstOrDefaultAsync(a => a.AccountId == accountId && a.UserId == user.Id);
+
+            if (account == null)
+            {
+                ModelState.AddModelError("", "Account not found.");
+                await LoadAccountsForView(user.Id);
+                return View();
+            }
+
+            // Update password
+            account.TransactionPassword = HashPassword(newPassword);
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "T-Pin reset successfully.";
+            return RedirectToAction("Index");
+        }
+
         private async Task LoadAccountsForView(string userId)
         {
             var accounts = await _context.Accounts

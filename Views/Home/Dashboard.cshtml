@@ -155,6 +155,68 @@
             }
         }
     </script>
+
+    <!-- T-Pin Setup Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Show T-Pin setup modal if needed
+            @if (TempData["ShowTPinSetup"] != null)
+            {
+                <text>
+                var tpinModal = new bootstrap.Modal(document.getElementById('tpinSetupModal'));
+                tpinModal.show();
+                </text>
+            }
+
+            // Handle T-Pin setup form submission
+            document.getElementById('saveTPinBtn').addEventListener('click', function() {
+                var accountId = document.getElementById('tpinAccount').value;
+                var password = document.getElementById('tpinPassword').value;
+                var confirmPassword = document.getElementById('tpinConfirm').value;
+
+                if (!accountId) {
+                    alert('Please select an account.');
+                    return;
+                }
+
+                if (!password || password.length < 4) {
+                    alert('T-Pin must be at least 4 characters long.');
+                    return;
+                }
+
+                if (password !== confirmPassword) {
+                    alert('T-Pin and confirmation do not match.');
+                    return;
+                }
+
+                // Send AJAX request to set T-Pin
+                fetch('/Profile/ResetTransactionPassword', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                    },
+                    body: 'accountId=' + encodeURIComponent(accountId) + 
+                          '&newPassword=' + encodeURIComponent(password) + 
+                          '&confirmPassword=' + encodeURIComponent(confirmPassword)
+                })
+                .then(response => {
+                    if (response.ok) {
+                        // Close modal and reload page to show success message
+                        var modal = bootstrap.Modal.getInstance(document.getElementById('tpinSetupModal'));
+                        modal.hide();
+                        window.location.reload();
+                    } else {
+                        alert('Failed to set T-Pin. Please try again.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred. Please try again.');
+                });
+            });
+        });
+    </script>
 }
 
 <style>
@@ -252,3 +314,52 @@
         </div>
     </div>
 </div>
+
+<!-- T-Pin Setup Modal for New Users -->
+@if (TempData["ShowTPinSetup"] != null)
+{
+    <div class="modal fade" id="tpinSetupModal" tabindex="-1" aria-labelledby="tpinSetupModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-warning text-dark">
+                    <h5 class="modal-title" id="tpinSetupModalLabel">🔐 Set Your T-Pin</h5>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-warning">
+                        <strong>⚠️ Security Required!</strong><br>
+                        You must set a Transaction Pin (T-Pin) to use banking services.
+                    </div>
+                    
+                    <form id="tpinSetupForm">
+                        <div class="mb-3">
+                            <label for="tpinAccount" class="form-label">Select Account</label>
+                            <select id="tpinAccount" class="form-select" required>
+                                <option value="">Choose Account</option>
+                                @foreach (var account in Model)
+                                {
+                                    <option value="@account.AccountId">@account.AccountNumber - @account.AccountType</option>
+                                }
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="tpinPassword" class="form-label">Set T-Pin</label>
+                            <input type="password" id="tpinPassword" class="form-control" required 
+                                   placeholder="Enter T-Pin (minimum 4 characters)" minlength="4" />
+                            <small class="form-text text-muted">This will be used for all transactions</small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="tpinConfirm" class="form-label">Confirm T-Pin</label>
+                            <input type="password" id="tpinConfirm" class="form-control" required 
+                                   placeholder="Confirm your T-Pin" minlength="4" />
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-warning" id="saveTPinBtn">Set T-Pin</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
