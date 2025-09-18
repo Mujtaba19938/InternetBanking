@@ -2,6 +2,33 @@
     ViewData["Title"] = "Banking Services";
 }
 
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="fas fa-check-circle me-2"></i>
+        @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="fas fa-exclamation-triangle me-2"></i>
+        @TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (ViewBag.PendingRequestsCount >= 5)
+{
+    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        <i class="fas fa-exclamation-triangle me-2"></i>
+        <strong>Maximum pending requests reached!</strong> You have 5 pending service requests. Please wait for responses before submitting new ones.
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
 <div class="row">
     <div class="col-md-8">
         <div class="card">
@@ -106,6 +133,38 @@
                             </div>
                         </div>
                     </div>
+
+                    <div class="col-md-6 mb-4">
+                        <div class="card h-100 border-danger">
+                            <div class="card-body text-center">
+                                <div class="mb-3">
+                                    <i class="display-4">🔒</i>
+                                </div>
+                                <h5 class="card-title">Account Lock/Unlock</h5>
+                                <p class="card-text">Lock or unlock your account for security</p>
+                                <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#serviceModal"
+                                        data-service="Account Lock/Unlock">
+                                    Request Now
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 mb-4">
+                        <div class="card h-100 border-warning">
+                            <div class="card-body text-center">
+                                <div class="mb-3">
+                                    <i class="display-4">📧</i>
+                                </div>
+                                <h5 class="card-title">Email Update</h5>
+                                <p class="card-text">Update your registered email address</p>
+                                <button class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#serviceModal"
+                                        data-service="Email Update">
+                                    Request Now
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -117,6 +176,12 @@
                 <h5 class="mb-0">📋 Request Status</h5>
             </div>
             <div class="card-body">
+                @if (ViewBag.PendingRequestsCount > 0)
+                {
+                    <div class="alert alert-info mb-3">
+                        <strong>@ViewBag.PendingRequestsCount</strong> pending request(s)
+                    </div>
+                }
                 <p>Track your service requests and view their current status.</p>
                 <a asp-action="MyRequests" class="btn btn-outline-primary w-100">
                     View My Requests
@@ -134,7 +199,9 @@
                     <strong>Address Change:</strong> 1-2 business days<br>
                     <strong>Stop Payment:</strong> Immediate<br>
                     <strong>Debit Card:</strong> 7-10 business days<br>
-                    <strong>Phone Update:</strong> 1 business day
+                    <strong>Phone Update:</strong> 1 business day<br>
+                    <strong>Account Lock/Unlock:</strong> Immediate<br>
+                    <strong>Email Update:</strong> 1 business day
                 </small>
             </div>
         </div>
@@ -159,7 +226,8 @@
 <div class="modal fade" id="serviceModal" tabindex="-1" aria-labelledby="serviceModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form asp-action="RequestService" method="post">
+            <form asp-action="SubmitRequest" method="post">
+                @Html.AntiForgeryToken()
                 <div class="modal-header">
                     <h5 class="modal-title" id="serviceModalLabel">Service Request</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -170,9 +238,16 @@
                         <input type="text" class="form-control" id="requestType" name="requestType" readonly>
                     </div>
                     <div class="mb-3">
-                        <label for="description" class="form-label">Description</label>
+                        <label for="description" class="form-label">Description <span class="text-danger">*</span></label>
                         <textarea class="form-control" id="description" name="description" rows="4"
-                                  placeholder="Please provide details about your request..."></textarea>
+                                  placeholder="Please provide details about your request..." required></textarea>
+                        <div class="invalid-feedback">
+                            Description must be at least 10 characters long.
+                        </div>
+                        <div class="valid-feedback">
+                            Description looks good!
+                        </div>
+                        <small class="form-text text-muted">Minimum 10 characters required</small>
                     </div>
                     <div class="alert alert-info">
                         <small>
@@ -194,11 +269,84 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             var serviceModal = document.getElementById('serviceModal');
+            var descriptionTextarea = document.getElementById('description');
+            var submitButton = serviceModal.querySelector('button[type="submit"]');
+            
+            // Disable request buttons if user has too many pending requests
+            @if (ViewBag.CanSubmitNewRequest == false)
+            {
+                <text>
+                document.querySelectorAll('[data-bs-target="#serviceModal"]').forEach(function(button) {
+                    button.disabled = true;
+                    button.title = 'Maximum pending requests reached. Please wait for responses.';
+                    button.classList.remove('btn-primary', 'btn-success', 'btn-warning', 'btn-info', 'btn-secondary', 'btn-danger', 'btn-dark');
+                    button.classList.add('btn-outline-secondary');
+                });
+                </text>
+            }
+            
+            // Set service type when modal opens
             serviceModal.addEventListener('show.bs.modal', function (event) {
                 var button = event.relatedTarget;
                 var service = button.getAttribute('data-service');
                 var requestTypeInput = serviceModal.querySelector('#requestType');
                 requestTypeInput.value = service;
+                
+                // Reset form
+                descriptionTextarea.value = '';
+                descriptionTextarea.classList.remove('is-invalid');
+                submitButton.disabled = false;
+                submitButton.textContent = 'Submit Request';
+                
+                // Update modal title
+                document.getElementById('serviceModalLabel').textContent = service + ' Request';
+            });
+            
+            // Real-time validation
+            descriptionTextarea.addEventListener('input', function() {
+                var description = this.value.trim();
+                var isValid = description.length >= 10;
+                
+                if (isValid) {
+                    this.classList.remove('is-invalid');
+                    this.classList.add('is-valid');
+                } else {
+                    this.classList.remove('is-valid');
+                    this.classList.add('is-invalid');
+                }
+                
+                // Update submit button state
+                submitButton.disabled = !isValid;
+            });
+            
+            // Form submission
+            serviceModal.querySelector('form').addEventListener('submit', function(e) {
+                var description = descriptionTextarea.value.trim();
+                
+                if (description.length < 10) {
+                    e.preventDefault();
+                    descriptionTextarea.classList.add('is-invalid');
+                    return false;
+                }
+                
+                // Show loading state
+                submitButton.disabled = true;
+                submitButton.textContent = 'Submitting...';
+                
+                // Add confirmation
+                var serviceType = document.getElementById('requestType').value;
+                if (!confirm(`Are you sure you want to submit a ${serviceType} request?\n\nDescription: ${description}`)) {
+                    e.preventDefault();
+                    submitButton.disabled = false;
+                    submitButton.textContent = 'Submit Request';
+                    return false;
+                }
+            });
+            
+            // Auto-resize textarea
+            descriptionTextarea.addEventListener('input', function() {
+                this.style.height = 'auto';
+                this.style.height = (this.scrollHeight) + 'px';
             });
         });
     </script>

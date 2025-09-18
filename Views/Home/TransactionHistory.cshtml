@@ -132,8 +132,18 @@
                class="btn btn-secondary">← Back to Account Details</a>
         </div>
         <div class="col-md-6 text-end">
-            <a asp-controller="Statement" asp-action="Monthly" asp-route-accountId="@account?.AccountId"
-               class="btn btn-outline-primary">📄 Generate Statement</a>
+            <div class="btn-group" role="group">
+                <button type="button" class="btn btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                    📄 Generate Statement
+                </button>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="/Statement/export-pdf?accountId=@account?.AccountId">📄 Download PDF</a></li>
+                    <li><a class="dropdown-item" href="/Statement/export-excel?accountId=@account?.AccountId">📊 Download Excel</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item" href="/Statement/export-annual-pdf?accountId=@account?.AccountId">📅 Annual PDF</a></li>
+                    <li><a class="dropdown-item" href="/Statement/export-annual-excel?accountId=@account?.AccountId">📊 Annual Excel</a></li>
+                </ul>
+            </div>
         </div>
     </div>
 </div>

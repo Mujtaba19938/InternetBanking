@@ -3,12 +3,206 @@
     ViewData["Title"] = "Dashboard";
 }
 
+@Html.AntiForgeryToken()
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="fas fa-check-circle me-2"></i>
+        @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h2>Account Dashboard</h2>
-    <div class="text-muted">
-        <small>Last Login: @DateTime.Now.ToString("MMM dd, yyyy HH:mm")</small>
+    <div class="d-flex align-items-center">
+        <div class="position-relative me-3">
+            <button class="btn btn-outline-primary position-relative" type="button" data-bs-toggle="dropdown" aria-expanded="false" id="notificationDropdown">
+                🔔 Notifications
+                @if (ViewBag.UnreadNotificationCount > 0)
+                {
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                        @ViewBag.UnreadNotificationCount
+                    </span>
+                }
+            </button>
+            <div class="dropdown-menu dropdown-menu-end" style="width: 350px; max-height: 400px; overflow-y: auto;">
+                <div class="dropdown-header d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0">Notifications</h6>
+                    @if (ViewBag.UnreadNotificationCount > 0)
+                    {
+                        <button class="btn btn-sm btn-outline-secondary" onclick="markAllAsRead()">Mark All Read</button>
+                    }
+                </div>
+                <div class="dropdown-divider"></div>
+                @if (ViewBag.Notifications != null && ((IEnumerable<dynamic>)ViewBag.Notifications).Any())
+                {
+                    foreach (var notification in ViewBag.Notifications)
+                    {
+                        <div class="dropdown-item notification-item @(notification.IsRead ? "read" : "unread")" data-notification-id="@notification.NotificationId">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-1 @(notification.IsRead ? "text-muted" : "fw-bold")">@notification.Title</h6>
+                                    <p class="mb-1 small">@notification.Message</p>
+                                    <small class="text-muted">@notification.CreatedDate.ToString("MMM dd, yyyy HH:mm")</small>
+                                </div>
+                                @if (!notification.IsRead)
+                                {
+                                    <button class="btn btn-sm btn-outline-primary ms-2" onclick="markAsRead(@notification.NotificationId)">✓</button>
+                                }
+                            </div>
+                        </div>
+                        <div class="dropdown-divider"></div>
+                    }
+                }
+                else
+                {
+                    <div class="dropdown-item text-center text-muted">
+                        <small>No new notifications</small>
+                    </div>
+                }
+            </div>
+        </div>
+        <div class="text-muted">
+            <small>Last Login: @DateTime.Now.ToString("MMM dd, yyyy HH:mm")</small>
+        </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        function markAsRead(notificationId) {
+            fetch('/Home/MarkNotificationAsRead', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                },
+                body: JSON.stringify({ notificationId: notificationId })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update UI
+                    const notificationItem = document.querySelector(`[data-notification-id="${notificationId}"]`);
+                    if (notificationItem) {
+                        notificationItem.classList.remove('unread');
+                        notificationItem.classList.add('read');
+                        const markButton = notificationItem.querySelector('button');
+                        if (markButton) {
+                            markButton.remove();
+                        }
+                        const title = notificationItem.querySelector('h6');
+                        if (title) {
+                            title.classList.remove('fw-bold');
+                            title.classList.add('text-muted');
+                        }
+                    }
+                    
+                    // Update badge count
+                    updateNotificationBadge();
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        }
+
+        function markAllAsRead() {
+            fetch('/Home/MarkAllNotificationsAsRead', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update all notifications to read
+                    document.querySelectorAll('.notification-item').forEach(item => {
+                        item.classList.remove('unread');
+                        item.classList.add('read');
+                        const markButton = item.querySelector('button');
+                        if (markButton) {
+                            markButton.remove();
+                        }
+                        const title = item.querySelector('h6');
+                        if (title) {
+                            title.classList.remove('fw-bold');
+                            title.classList.add('text-muted');
+                        }
+                    });
+                    
+                    // Update badge count
+                    updateNotificationBadge();
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        }
+
+        function updateNotificationBadge() {
+            const unreadCount = document.querySelectorAll('.notification-item.unread').length;
+            const badge = document.querySelector('.badge');
+            if (badge) {
+                if (unreadCount > 0) {
+                    badge.textContent = unreadCount;
+                    badge.style.display = 'inline';
+                } else {
+                    badge.style.display = 'none';
+                }
+            }
+            
+            // Update mark all button
+            const markAllButton = document.querySelector('.dropdown-header button');
+            if (markAllButton) {
+                if (unreadCount > 0) {
+                    markAllButton.style.display = 'inline-block';
+                } else {
+                    markAllButton.style.display = 'none';
+                }
+            }
+        }
+    </script>
+}
+
+<style>
+    .notification-item {
+        padding: 10px 15px;
+        border: none;
+        background: none;
+        text-align: left;
+        width: 100%;
+        transition: background-color 0.2s;
+    }
+
+    .notification-item:hover {
+        background-color: #f8f9fa;
+    }
+
+    .notification-item.unread {
+        background-color: #e3f2fd;
+        border-left: 3px solid #2196f3;
+    }
+
+    .notification-item.read {
+        opacity: 0.7;
+    }
+
+    .dropdown-menu {
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        border: 1px solid rgba(0, 0, 0, 0.1);
+    }
+
+    .dropdown-header {
+        background-color: #f8f9fa;
+        border-bottom: 1px solid #dee2e6;
+        padding: 10px 15px;
+    }
+
+    .dropdown-divider {
+        margin: 0;
+    }
+</style>
 
 <div class="row">
     @foreach (var account in Model)
@@ -22,7 +216,7 @@
                     </p>
                     <h3 class="mb-3">$@account.Balance.ToString("N2")</h3>
                     <div class="d-grid gap-2">
-                        <a asp-controller="Home" asp-action="AccountDetails" asp-route-id="@account.AccountId"
+                        <a asp-controller="Home" asp-action="AccountDetails" asp-route-accountId="@account.AccountId"
                            class="btn btn-light btn-sm">View Details</a>
                         <a asp-controller="Home" asp-action="TransactionHistory" asp-route-accountId="@account.AccountId"
                            class="btn btn-outline-light btn-sm">Transaction History</a>

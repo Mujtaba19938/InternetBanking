@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using InternetBanking.Models;
 using InternetBanking.Models.ViewModels;
 using InternetBanking.Data;
+using InternetBanking.Services;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 
@@ -16,17 +17,20 @@ namespace InternetBanking.Controllers
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly ApplicationDbContext _context;
+        private readonly INotificationService _notificationService;
 
         public AdminController(
             UserManager<ApplicationUser> userManager,
             SignInManager<ApplicationUser> signInManager,
             RoleManager<IdentityRole> roleManager,
-            ApplicationDbContext context)
+            ApplicationDbContext context,
+            INotificationService notificationService)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _roleManager = roleManager;
             _context = context;
+            _notificationService = notificationService;
         }
 
         [HttpGet]
@@ -135,15 +139,33 @@ namespace InternetBanking.Controllers
 
         [Authorize(Roles = "Admin")]
         [HttpPost("service-requests/{id}/respond")]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> RespondToServiceRequest(int id, string response)
         {
-            var serviceRequest = await _context.ServiceRequests.FindAsync(id);
+            var serviceRequest = await _context.ServiceRequests
+                .Include(sr => sr.User)
+                .FirstOrDefaultAsync(sr => sr.RequestId == id);
+                
             if (serviceRequest != null)
             {
                 serviceRequest.AdminResponse = response;
                 serviceRequest.ResponseDate = DateTime.Now;
                 serviceRequest.Status = "Responded";
                 await _context.SaveChangesAsync();
+
+                // Create notification for the user
+                var title = $"Response to {serviceRequest.RequestType}";
+                var message = $"Your {serviceRequest.RequestType} request has been responded to: {response}";
+                
+                await _notificationService.CreateNotificationAsync(
+                    serviceRequest.UserId,
+                    title,
+                    message,
+                    "ServiceRequest",
+                    serviceRequest.RequestId,
+                    "ServiceRequest"
+                );
+
                 TempData["SuccessMessage"] = "Response sent successfully!";
             }
             return RedirectToAction("ServiceRequests");

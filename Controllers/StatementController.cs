@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using InternetBanking.Models;
 using InternetBanking.Data;
+using InternetBanking.Services;
 
 namespace InternetBanking.Controllers
 {
@@ -12,11 +13,13 @@ namespace InternetBanking.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IStatementService _statementService;
 
-        public StatementController(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
+        public StatementController(ApplicationDbContext context, UserManager<ApplicationUser> userManager, IStatementService statementService)
         {
             _context = context;
             _userManager = userManager;
+            _statementService = statementService;
         }
 
         public async Task<IActionResult> Monthly(int accountId, int month = 0, int year = 0)
@@ -95,6 +98,96 @@ namespace InternetBanking.Controllers
             ViewBag.EndDate = endDate;
 
             return View(transactions);
+        }
+
+        [HttpGet("export-pdf")]
+        public async Task<IActionResult> ExportPdf(int accountId, int month = 0, int year = 0)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            // Default to current month if not specified
+            if (month == 0) month = DateTime.Now.Month;
+            if (year == 0) year = DateTime.Now.Year;
+
+            var pdfBytes = await _statementService.GeneratePdfStatementAsync(accountId, month, year);
+            if (pdfBytes == null || pdfBytes.Length == 0)
+            {
+                return NotFound();
+            }
+
+            var fileName = $"MonthlyStatement_{accountId}_{year}_{month:D2}.pdf";
+            return File(pdfBytes, "application/pdf", fileName);
+        }
+
+        [HttpGet("export-excel")]
+        public async Task<IActionResult> ExportExcel(int accountId, int month = 0, int year = 0)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            // Default to current month if not specified
+            if (month == 0) month = DateTime.Now.Month;
+            if (year == 0) year = DateTime.Now.Year;
+
+            var excelBytes = await _statementService.GenerateExcelStatementAsync(accountId, month, year);
+            if (excelBytes == null || excelBytes.Length == 0)
+            {
+                return NotFound();
+            }
+
+            var fileName = $"MonthlyStatement_{accountId}_{year}_{month:D2}.xlsx";
+            return File(excelBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
+        }
+
+        [HttpGet("export-annual-pdf")]
+        public async Task<IActionResult> ExportAnnualPdf(int accountId, int year = 0)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            // Default to current year if not specified
+            if (year == 0) year = DateTime.Now.Year;
+
+            var pdfBytes = await _statementService.GenerateAnnualPdfStatementAsync(accountId, year);
+            if (pdfBytes == null || pdfBytes.Length == 0)
+            {
+                return NotFound();
+            }
+
+            var fileName = $"AnnualStatement_{accountId}_{year}.pdf";
+            return File(pdfBytes, "application/pdf", fileName);
+        }
+
+        [HttpGet("export-annual-excel")]
+        public async Task<IActionResult> ExportAnnualExcel(int accountId, int year = 0)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            // Default to current year if not specified
+            if (year == 0) year = DateTime.Now.Year;
+
+            var excelBytes = await _statementService.GenerateAnnualExcelStatementAsync(accountId, year);
+            if (excelBytes == null || excelBytes.Length == 0)
+            {
+                return NotFound();
+            }
+
+            var fileName = $"AnnualStatement_{accountId}_{year}.xlsx";
+            return File(excelBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
         }
     }
 }

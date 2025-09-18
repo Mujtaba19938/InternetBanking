@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using InternetBanking.Data;
 using InternetBanking.Models;
 using InternetBanking.Filters;
+using InternetBanking.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,6 +33,12 @@ builder.Services.AddControllersWithViews(options =>
 {
     options.Filters.Add<RoleChangeAuthorizationFilter>();
 });
+
+// Register NotificationService
+builder.Services.AddScoped<INotificationService, NotificationService>();
+
+// Register StatementService
+builder.Services.AddScoped<IStatementService, StatementService>();
 
 var app = builder.Build();
 

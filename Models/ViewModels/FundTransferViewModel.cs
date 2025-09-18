@@ -14,7 +14,7 @@ namespace InternetBanking.Models.ViewModels
         public string ToAccountNumber { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Amount is required")]
-        [Range(1, double.MaxValue, ErrorMessage = "Amount must be greater than 0")]
+        [Range(0.01, 1000000, ErrorMessage = "Amount must be between $0.01 and $1,000,000")]
         [Display(Name = "Transfer Amount")]
         public decimal Amount { get; set; }
 

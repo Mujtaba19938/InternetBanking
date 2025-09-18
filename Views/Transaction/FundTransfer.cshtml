@@ -10,7 +10,7 @@
                 <h3 class="mb-0">💸 Fund Transfer</h3>
             </div>
             <div class="card-body">
-                <form asp-action="FundTransfer" method="post">
+                <form asp-action="FundTransfer" method="post" id="fundTransferForm">
                     <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
                     <div class="form-group mb-3">
@@ -84,4 +84,91 @@
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
+    
+    <script>
+        $(document).ready(function() {
+            let selectedAccount = null;
+            
+            // Store account data when account is selected
+            $('#FromAccountId').change(function() {
+                const accountId = $(this).val();
+                if (accountId) {
+                    const option = $(this).find('option:selected');
+                    const balanceText = option.text().match(/Balance: \$([\d,]+\.?\d*)/);
+                    if (balanceText) {
+                        const balance = parseFloat(balanceText[1].replace(/,/g, ''));
+                        selectedAccount = { id: accountId, balance: balance };
+                        updateBalanceDisplay(balance);
+                    }
+                } else {
+                    selectedAccount = null;
+                    updateBalanceDisplay(0);
+                }
+            });
+            
+            // Update balance display
+            function updateBalanceDisplay(balance) {
+                const balanceElement = $('#balanceDisplay');
+                if (balanceElement.length === 0) {
+                    $('#FromAccountId').after('<div id="balanceDisplay" class="form-text text-info mb-2">Available Balance: $' + balance.toFixed(2) + '</div>');
+                } else {
+                    balanceElement.text('Available Balance: $' + balance.toFixed(2));
+                }
+            }
+            
+            // Validate amount against balance
+            $('#Amount').on('input', function() {
+                const amount = parseFloat($(this).val()) || 0;
+                if (selectedAccount && amount > selectedAccount.balance) {
+                    $(this).addClass('is-invalid');
+                    if ($('#amountError').length === 0) {
+                        $(this).after('<div id="amountError" class="invalid-feedback">Amount exceeds available balance</div>');
+                    }
+                } else {
+                    $(this).removeClass('is-invalid');
+                    $('#amountError').remove();
+                }
+            });
+            
+            // Form submission validation
+            $('#fundTransferForm').submit(function(e) {
+                const amount = parseFloat($('#Amount').val()) || 0;
+                const toAccount = $('#ToAccountNumber').val().trim();
+                
+                if (!selectedAccount) {
+                    e.preventDefault();
+                    alert('Please select a source account.');
+                    return false;
+                }
+                
+                if (amount <= 0) {
+                    e.preventDefault();
+                    alert('Please enter a valid amount.');
+                    return false;
+                }
+                
+                if (amount > selectedAccount.balance) {
+                    e.preventDefault();
+                    alert('Insufficient balance for this transfer.');
+                    return false;
+                }
+                
+                if (!toAccount) {
+                    e.preventDefault();
+                    alert('Please enter recipient account number.');
+                    return false;
+                }
+                
+                // Show confirmation dialog
+                const confirmMessage = `Confirm transfer of $${amount.toFixed(2)} from account ${selectedAccount.id} to ${toAccount}?`;
+                if (!confirm(confirmMessage)) {
+                    e.preventDefault();
+                    return false;
+                }
+                
+                // Disable submit button to prevent double submission
+                $('button[type="submit"]').prop('disabled', true).text('Processing...');
+            });
+        });
+    </script>
 }

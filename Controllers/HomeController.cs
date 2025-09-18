@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using InternetBanking.Models;
 using InternetBanking.Data;
+using InternetBanking.Services;
 
 namespace InternetBanking.Controllers
 {
@@ -11,11 +12,13 @@ namespace InternetBanking.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly INotificationService _notificationService;
 
-        public HomeController(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
+        public HomeController(ApplicationDbContext context, UserManager<ApplicationUser> userManager, INotificationService notificationService)
         {
             _context = context;
             _userManager = userManager;
+            _notificationService = notificationService;
         }
 
         public IActionResult Index()
@@ -54,8 +57,14 @@ namespace InternetBanking.Controllers
                     .ToListAsync();
             }
 
+            // Get user notifications
+            var notifications = await _notificationService.GetUserNotificationsAsync(user.Id, includeRead: false);
+            var unreadCount = await _notificationService.GetUnreadNotificationCountAsync(user.Id);
+
             ViewBag.Accounts = accounts;
             ViewBag.RecentTransactions = recentTransactions;
+            ViewBag.Notifications = notifications;
+            ViewBag.UnreadNotificationCount = unreadCount;
 
             return View(accounts);
         }
@@ -97,7 +106,7 @@ namespace InternetBanking.Controllers
 
         [Authorize]
         [Authorize(Roles = "User")]
-        public async Task<IActionResult> TransactionHistory()
+        public async Task<IActionResult> TransactionHistory(int accountId)
         {
             var user = await _userManager.GetUserAsync(User);
             if (user == null)
@@ -111,21 +120,43 @@ namespace InternetBanking.Controllers
                 return RedirectToAction("Index", "Admin");
             }
 
-            var userAccounts = await _context.Accounts
-                .Where(a => a.UserId == user.Id)
-                .Select(a => a.AccountId)
-                .ToListAsync();
+            // Verify the account belongs to the current user
+            var account = await _context.Accounts
+                .FirstOrDefaultAsync(a => a.AccountId == accountId && a.UserId == user.Id);
 
-            List<Transaction> transactions = new List<Transaction>();
-            if (userAccounts.Any())
+            if (account == null)
             {
-                transactions = await _context.Transactions
-                    .Where(t => userAccounts.Contains(t.FromAccountId) || (t.ToAccountId.HasValue && userAccounts.Contains(t.ToAccountId.Value)))
-                    .OrderByDescending(t => t.TransactionDate)
-                    .ToListAsync();
+                return NotFound();
             }
 
+            // Get transactions for the specific account only
+            var transactions = await _context.Transactions
+                .Where(t => t.FromAccountId == accountId || t.ToAccountId == accountId)
+                .OrderByDescending(t => t.TransactionDate)
+                .ToListAsync();
+
+            ViewBag.Account = account;
             return View(transactions);
+        }
+
+        [HttpPost]
+        [Authorize]
+        public async Task<IActionResult> MarkNotificationAsRead(int notificationId)
+        {
+            await _notificationService.MarkNotificationAsReadAsync(notificationId);
+            return Json(new { success = true });
+        }
+
+        [HttpPost]
+        [Authorize]
+        public async Task<IActionResult> MarkAllNotificationsAsRead()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user != null)
+            {
+                await _notificationService.MarkAllNotificationsAsReadAsync(user.Id);
+            }
+            return Json(new { success = true });
         }
 
         public IActionResult Privacy()

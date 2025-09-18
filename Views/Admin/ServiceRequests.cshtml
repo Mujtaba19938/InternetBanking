@@ -53,7 +53,8 @@
                                             }
                                             else
                                             {
-                                                <form asp-action="RespondToServiceRequest" method="post" class="mt-2">
+                                                <form action="/admin/service-requests/@request.RequestId/respond" method="post" class="mt-2">
+                                                    @Html.AntiForgeryToken()
                                                     <input type="hidden" name="id" value="@request.RequestId" />
                                                     <div class="form-group">
                                                         <textarea name="response" class="form-control" rows="3" placeholder="Enter your response..." required></textarea>

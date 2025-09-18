@@ -53,17 +53,24 @@
                                 </a>
                             </div>
                             <div class="col-md-3 mb-2">
+                                <div class="dropdown">
+                                    <button class="btn btn-outline-primary w-100 dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                        📄 Generate Statement
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" href="/Statement/export-pdf?accountId=@Model.AccountId">📄 Monthly PDF</a></li>
+                                        <li><a class="dropdown-item" href="/Statement/export-excel?accountId=@Model.AccountId">📊 Monthly Excel</a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><a class="dropdown-item" href="/Statement/export-annual-pdf?accountId=@Model.AccountId">📅 Annual PDF</a></li>
+                                        <li><a class="dropdown-item" href="/Statement/export-annual-excel?accountId=@Model.AccountId">📊 Annual Excel</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="col-md-3 mb-2">
                                 <a asp-controller="Statement" asp-action="Monthly"
                                    asp-route-accountId="@Model.AccountId"
                                    class="btn btn-outline-primary w-100">
-                                    📄 Monthly Statement
-                                </a>
-                            </div>
-                            <div class="col-md-3 mb-2">
-                                <a asp-controller="Statement" asp-action="Annual"
-                                   asp-route-accountId="@Model.AccountId"
-                                   class="btn btn-outline-primary w-100">
-                                    📅 Annual Statement
+                                    📄 View Monthly
                                 </a>
                             </div>
                         </div>
