@@ -165,6 +165,14 @@
                 <text>
                 var tpinModal = new bootstrap.Modal(document.getElementById('tpinSetupModal'));
                 tpinModal.show();
+                
+                // Add event listener for when modal is closed
+                document.getElementById('tpinSetupModal').addEventListener('hidden.bs.modal', function() {
+                    // Check if T-Pin was successfully set
+                    if (!window.tpinSetSuccessfully) {
+                        showTPinWarning();
+                    }
+                });
                 </text>
             }
 
@@ -202,6 +210,8 @@
                 })
                 .then(response => {
                     if (response.ok) {
+                        // Mark T-Pin as successfully set
+                        window.tpinSetSuccessfully = true;
                         // Close modal and reload page to show success message
                         var modal = bootstrap.Modal.getInstance(document.getElementById('tpinSetupModal'));
                         modal.hide();
@@ -216,6 +226,47 @@
                 });
             });
         });
+
+        // Function to show T-Pin warning popup
+        function showTPinWarning() {
+            // Create warning modal HTML
+            var warningModalHtml = `
+                <div class="modal fade" id="tpinWarningModal" tabindex="-1" aria-labelledby="tpinWarningModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header bg-danger text-white">
+                                <h5 class="modal-title" id="tpinWarningModalLabel">⚠️ T-Pin Required</h5>
+                            </div>
+                            <div class="modal-body">
+                                <div class="alert alert-danger">
+                                    <strong>⚠️ Important Warning!</strong><br><br>
+                                    You have not set up your T-Pin yet. Without a T-Pin, you will not be able to perform any transactions including:
+                                    <ul class="mt-2 mb-0">
+                                        <li>Fund transfers</li>
+                                        <li>Cash deposits</li>
+                                        <li>Check deposits</li>
+                                        <li>Wire transfers</li>
+                                    </ul>
+                                    <br>
+                                    <strong>Please set up your T-Pin from your profile to use banking services.</strong>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-primary" onclick="window.location.href='/Profile'">Go to Profile</button>
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">I'll Do It Later</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Add modal to page
+            document.body.insertAdjacentHTML('beforeend', warningModalHtml);
+            
+            // Show the warning modal
+            var warningModal = new bootstrap.Modal(document.getElementById('tpinWarningModal'));
+            warningModal.show();
+        }
     </script>
 }
 
