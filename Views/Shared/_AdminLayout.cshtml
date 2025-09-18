@@ -96,6 +96,26 @@
             </div>
         </nav>
     </header>
+    <!-- Permanent Admin Credentials Modal -->
+    <div class="alert alert-warning alert-dismissible fade show sticky-top" role="alert" style="margin-bottom: 0; z-index: 1050;">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <strong>🔑 Default Admin Credentials:</strong>
+                    <span class="ms-2">
+                        <strong>Username:</strong> <code>admin</code> | 
+                        <strong>Password:</strong> <code>Admin@123</code>
+                    </span>
+                    <small class="text-muted ms-2">⚠️ Change these credentials for security</small>
+                </div>
+                <div class="col-md-4 text-end">
+                    <button type="button" class="btn btn-sm btn-outline-warning" onclick="copyCredentials()">📋 Copy</button>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="container">
         <main role="main" class="pb-3">
             @if (TempData["SuccessMessage"] != null)
@@ -124,6 +144,30 @@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+    
+    <script>
+        function copyCredentials() {
+            const credentials = 'Username: admin\nPassword: Admin@123';
+            navigator.clipboard.writeText(credentials).then(function() {
+                // Show temporary success message
+                const button = event.target;
+                const originalText = button.innerHTML;
+                button.innerHTML = '✅ Copied!';
+                button.classList.remove('btn-outline-warning');
+                button.classList.add('btn-success');
+                
+                setTimeout(function() {
+                    button.innerHTML = originalText;
+                    button.classList.remove('btn-success');
+                    button.classList.add('btn-outline-warning');
+                }, 2000);
+            }).catch(function(err) {
+                console.error('Could not copy text: ', err);
+                alert('Could not copy credentials. Please copy manually:\n\nUsername: admin\nPassword: Admin@123');
+            });
+        }
+    </script>
+    
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html> 

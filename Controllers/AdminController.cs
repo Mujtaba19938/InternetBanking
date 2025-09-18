@@ -77,39 +77,6 @@ namespace InternetBanking.Controllers
             return View("AdminForm");
         }
 
-        [HttpPost("register")]
-        [ValidateAntiForgeryToken]
-        [AllowAnonymous]
-        public async Task<IActionResult> Register(RegisterViewModel model)
-        {
-            if (ModelState.IsValid)
-            {
-                var user = new ApplicationUser
-                {
-                    UserName = model.UserId,
-                    Email = model.Email,
-                    FirstName = model.FirstName,
-                    LastName = model.LastName,
-                    Address = model.Address,
-                    DateOfBirth = model.DateOfBirth,
-                    PhoneNumber = model.PhoneNumber
-                };
-                var result = await _userManager.CreateAsync(user, model.Password);
-                if (result.Succeeded)
-                {
-                    // Assign Admin role
-                    await _userManager.AddToRoleAsync(user, "Admin");
-                    await _signInManager.SignInAsync(user, isPersistent: false);
-                    TempData["SuccessMessage"] = "Admin registration successful!";
-                    return RedirectToAction("Index");
-                }
-                foreach (var error in result.Errors)
-                {
-                    ModelState.AddModelError(string.Empty, error.Description);
-                }
-            }
-            return View("AdminForm");
-        }
 
         [Authorize(Roles = "Admin")]
         [HttpGet("dashboard")]
@@ -118,13 +85,6 @@ namespace InternetBanking.Controllers
             return View();
         }
 
-        [Authorize(Roles = "Admin")]
-        [HttpGet("manage-admins")]
-        public async Task<IActionResult> ManageAdmins()
-        {
-            var adminUsers = await _userManager.GetUsersInRoleAsync("Admin");
-            return View(adminUsers);
-        }
 
         [Authorize(Roles = "Admin")]
         [HttpGet("service-requests")]
@@ -203,28 +163,5 @@ namespace InternetBanking.Controllers
             }
         }
 
-        [Authorize(Roles = "Admin")]
-        [HttpPost("change-user-role")]
-        public async Task<IActionResult> ChangeUserRole(string userId, string newRole)
-        {
-            var user = await _userManager.FindByIdAsync(userId);
-            if (user == null)
-            {
-                TempData["ErrorMessage"] = "User not found.";
-                return RedirectToAction("ManageAdmins");
-            }
-
-            // Get current roles
-            var currentRoles = await _userManager.GetRolesAsync(user);
-            
-            // Remove current roles
-            await _userManager.RemoveFromRolesAsync(user, currentRoles);
-            
-            // Add new role
-            await _userManager.AddToRoleAsync(user, newRole);
-            
-            TempData["SuccessMessage"] = $"User {user.UserName} role changed to {newRole}. They will be logged out on their next request.";
-            return RedirectToAction("ManageAdmins");
-        }
     }
 } 
