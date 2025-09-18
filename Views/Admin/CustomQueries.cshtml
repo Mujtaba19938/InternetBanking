@@ -11,13 +11,6 @@
                     <h3 class="mb-0">🔍 Custom Queries</h3>
                 </div>
                 <div class="card-body">
-                    @if (TempData["ErrorMessage"] != null)
-                    {
-                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                            @TempData["ErrorMessage"]
-                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                        </div>
-                    }
 
                     <div class="alert alert-warning">
                         <strong>⚠️ Security Notice:</strong> Only SELECT queries are allowed for security reasons. 
