@@ -8,16 +8,36 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            important: true,
+            corePlugins: {
+                preflight: false,
+            },
+            safelist: [
+                'navbar-nav',
+                'nav-link',
+                'navbar-text',
+                'navbar-brand'
+            ]
+        }
+    </script>
     <style>
         /* Custom CSS to override Bootstrap/Tailwind conflicts */
         .navbar-nav .nav-link {
             color: white !important;
+            display: block !important;
+            visibility: visible !important;
         }
         .navbar-text {
             color: white !important;
+            display: block !important;
+            visibility: visible !important;
         }
         .navbar-brand {
             color: white !important;
+            display: block !important;
+            visibility: visible !important;
         }
         
         /* Admin Panel Red Theme */
