@@ -5,48 +5,116 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - Admin Panel</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
+        /* Custom CSS to override Bootstrap/Tailwind conflicts */
+        .navbar-nav .nav-link {
+            color: white !important;
+        }
+        .navbar-text {
+            color: white !important;
+        }
         .navbar-brand {
-            font-weight: bold;
-            color: #dc3545 !important;
+            color: white !important;
         }
-
-        .btn-primary {
-            background-color: #dc3545;
-            border-color: #dc3545;
-        }
-
-        .btn-primary:hover {
-            background-color: #c82333;
-            border-color: #bd2130;
-        }
-
-        .card-header {
-            background-color: #f8f9fa;
-            border-bottom: 2px solid #dc3545;
-        }
-
+        
+        /* Admin Panel Red Theme */
         .admin-navbar {
-            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%) !important;
+            background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%) !important;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
         }
 
         .admin-navbar .nav-link {
             color: white !important;
+            font-weight: 500;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            transition: all 0.2s ease-in-out;
         }
 
         .admin-navbar .nav-link:hover {
-            color: #f8f9fa !important;
-            background-color: rgba(255,255,255,0.1);
+            color: #fef2f2 !important;
+            background-color: rgba(255, 255, 255, 0.1);
+            transform: translateY(-1px);
         }
 
         .admin-navbar .navbar-brand {
             color: white !important;
+            font-weight: 700;
+            font-size: 1.5rem;
         }
 
         .admin-badge {
-            background-color: #dc3545;
+            background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
             color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+            border: none;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            box-shadow: 0 4px 6px -1px rgba(220, 38, 38, 0.3);
+            transition: all 0.2s ease-in-out;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #b91c1c 0%, #991b1b 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 8px -1px rgba(220, 38, 38, 0.4);
+        }
+
+        .btn-outline-light {
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .btn-outline-light:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: translateY(-1px);
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+            border: none;
+            border-radius: 1rem 1rem 0 0;
+        }
+
+        .alert-warning {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border: 1px solid #f59e0b;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .alert-success {
+            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+            border: 1px solid #10b981;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .alert-danger {
+            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+            border: 1px solid #ef4444;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .footer {
+            background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+            color: #9ca3af;
+            border-top: 1px solid #374151;
         }
     </style>
 </head>
