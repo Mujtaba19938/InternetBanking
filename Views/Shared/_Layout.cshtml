@@ -1,4 +1,7 @@
-﻿<!DOCTYPE html>
+﻿@using Microsoft.AspNetCore.Identity
+@inject UserManager<InternetBanking.Models.ApplicationUser> UserManager
+
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -116,6 +119,28 @@
             text-decoration: none !important;
             border-bottom: none !important;
         }
+        
+        /* Force logout button to be visible */
+        .navbar-nav form button[type="submit"] {
+            display: inline-block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            background-color: #dc3545 !important;
+            color: white !important;
+            border: 1px solid #dc3545 !important;
+            padding: 8px 16px !important;
+            border-radius: 4px !important;
+            cursor: pointer !important;
+            font-size: 14px !important;
+            margin-left: 10px !important;
+            text-decoration: none !important;
+            box-shadow: none !important;
+        }
+        
+        .navbar-nav form button[type="submit"]:hover {
+            background-color: #c82333 !important;
+            border-color: #bd2130 !important;
+        }
     </style>
 </head>
 <body>
@@ -155,11 +180,15 @@
                         @if (User.Identity.IsAuthenticated)
                         {
                             <li class="nav-item">
-                                <span class="navbar-text me-3">Welcome, @User.Identity.Name</span>
+                                @{
+                                    var user = await UserManager.GetUserAsync(User);
+                                    var displayName = user != null ? $"{user.FirstName} {user.LastName}" : User.Identity?.Name;
+                                }
+                                <span class="navbar-text me-3">Welcome, @displayName</span>
                             </li>
                             <li class="nav-item">
                                 <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
-                                    <button type="submit" class="btn btn-outline-danger btn-sm">Logout</button>
+                                    <button type="submit" style="background-color: #dc3545; color: white; border: 1px solid #dc3545; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 14px; margin-left: 10px;">Logout</button>
                                 </form>
                             </li>
                         }

@@ -2,73 +2,245 @@
     ViewData["Title"] = "Home Page";
 }
 
-<div class="text-center">
-
-    <h1 class="display-4">Welcome to Secure Internet Banking</h1>
-    <p class="lead">Your trusted partner for secure online banking services</p>
-</div>
-
-<div class="row mt-5">
-    <div class="col-md-4">
-        <div class="card h-100">
-            <div class="card-body text-center">
-                <h5 class="card-title">🔒 Secure Login</h5>
-                <p class="card-text">Access your accounts with our multi-layer security system including account lockout protection.</p>
+<!-- Hero Section -->
+<div class="bg-gradient-to-br from-blue-50 to-indigo-100 rounded-2xl p-8 md:p-12 mb-8">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+        <div>
+            <h1 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+                Welcome to <span class="text-blue-600">Secure Internet Banking</span>
+            </h1>
+            <p class="text-xl text-gray-600 mb-8">
+                Your trusted partner for secure online banking services with cutting-edge security and modern convenience.
+            </p>
+            <div class="flex flex-col sm:flex-row gap-4">
+                @if (!User.Identity.IsAuthenticated)
+                {
+                    <a asp-controller="Account" asp-action="Login" class="bg-blue-600 text-white px-8 py-3 rounded-xl font-semibold hover:bg-blue-700 transition-colors shadow-lg hover:shadow-xl">
+                        Login to Your Account
+                    </a>
+                    <a asp-controller="Account" asp-action="Register" class="bg-white text-blue-600 px-8 py-3 rounded-xl font-semibold border-2 border-blue-600 hover:bg-blue-50 transition-colors shadow-lg hover:shadow-xl">
+                        Open New Account
+                    </a>
+                }
+                else
+                {
+                    <a asp-controller="Home" asp-action="Dashboard" class="bg-blue-600 text-white px-8 py-3 rounded-xl font-semibold hover:bg-blue-700 transition-colors shadow-lg hover:shadow-xl">
+                        Go to Dashboard
+                    </a>
+                }
+                <a href="#features" class="text-blue-600 px-8 py-3 rounded-xl font-semibold hover:bg-blue-50 transition-colors">
+                    Learn More →
+                </a>
             </div>
         </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card h-100">
-            <div class="card-body text-center">
-                <h5 class="card-title">💰 Fund Transfers</h5>
-                <p class="card-text">Transfer funds securely between accounts with transaction password verification.</p>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card h-100">
-            <div class="card-body text-center">
-                <h5 class="card-title">📊 Account Management</h5>
-                <p class="card-text">View balances, transaction history, and manage your banking services online.</p>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="row mt-4">
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-body">
-                <h5 class="card-title">🛡️ Security Features</h5>
-                <ul class="list-unstyled">
-                    <li>✓ Account lockout after 3 failed attempts</li>
-                    <li>✓ Separate transaction passwords</li>
-                    <li>✓ Encrypted data transmission</li>
-                    <li>✓ Session timeout protection</li>
-                </ul>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-body">
-                <h5 class="card-title">🏦 Banking Services</h5>
-                <ul class="list-unstyled">
-                    <li>✓ Balance inquiry</li>
-                    <li>✓ Fund transfers</li>
-                    <li>✓ Transaction history</li>
-                    <li>✓ Service requests</li>
-                    <li>✓ Account statements</li>
-                </ul>
+        <div class="flex justify-center lg:justify-end">
+            <div class="w-64 h-64 bg-blue-100 rounded-2xl flex items-center justify-center">
+                <svg class="w-32 h-32 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                </svg>
             </div>
         </div>
     </div>
 </div>
 
-@if (!User.Identity.IsAuthenticated)
-{
-    <div class="text-center mt-5">
-        <a asp-controller="Account" asp-action="Login" class="btn btn-primary btn-lg me-3">Login to Your Account</a>
-        <a asp-controller="Account" asp-action="Register" class="btn btn-outline-primary btn-lg">Open New Account</a>
+<!-- Quick Actions / Feature Highlights -->
+<div id="features" class="mb-12">
+    <h2 class="text-3xl font-bold text-gray-900 text-center mb-8">Why Choose Our Banking Platform?</h2>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-all duration-300 hover:scale-105">
+            <div class="text-center">
+                <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                    </svg>
+                </div>
+                <h3 class="text-xl font-semibold text-gray-900 mb-3">Secure Login</h3>
+                <p class="text-gray-600 mb-4">Access your accounts with our multi-layer security system including account lockout protection.</p>
+                <a href="#" class="text-blue-600 font-semibold hover:text-blue-700">Get Started →</a>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-all duration-300 hover:scale-105">
+            <div class="text-center">
+                <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
+                    </svg>
+                </div>
+                <h3 class="text-xl font-semibold text-gray-900 mb-3">Fund Transfers</h3>
+                <p class="text-gray-600 mb-4">Transfer funds securely between accounts with transaction password verification.</p>
+                <a href="#" class="text-blue-600 font-semibold hover:text-blue-700">Get Started →</a>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-all duration-300 hover:scale-105">
+            <div class="text-center">
+                <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg class="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                    </svg>
+                </div>
+                <h3 class="text-xl font-semibold text-gray-900 mb-3">Account Management</h3>
+                <p class="text-gray-600 mb-4">View balances, transaction history, and manage your banking services online.</p>
+                <a href="#" class="text-blue-600 font-semibold hover:text-blue-700">Get Started →</a>
+            </div>
+        </div>
     </div>
-}
+</div>
+
+<!-- Security Features Section -->
+<div class="mb-12">
+    <div class="bg-gray-50 rounded-2xl p-8">
+        <div class="flex items-center mb-6">
+            <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mr-4">
+                <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                </svg>
+            </div>
+            <h2 class="text-2xl font-bold text-gray-900">Security Features</h2>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="flex items-center">
+                <svg class="w-5 h-5 text-green-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+                <span class="text-gray-700">Account lockout after 3 failed attempts</span>
+            </div>
+            <div class="flex items-center">
+                <svg class="w-5 h-5 text-green-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+                <span class="text-gray-700">Separate transaction passwords</span>
+            </div>
+            <div class="flex items-center">
+                <svg class="w-5 h-5 text-green-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+                <span class="text-gray-700">Encrypted data transmission</span>
+            </div>
+            <div class="flex items-center">
+                <svg class="w-5 h-5 text-green-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+                <span class="text-gray-700">Session timeout protection</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Banking Services Section -->
+<div class="mb-12">
+    <div class="bg-white rounded-2xl shadow-md p-8">
+        <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+            <svg class="w-8 h-8 text-blue-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+            </svg>
+            Banking Services
+        </h2>
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+            <div class="bg-gray-50 rounded-lg p-4 text-center hover:bg-gray-100 transition-colors">
+                <svg class="w-8 h-8 text-blue-600 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
+                </svg>
+                <span class="text-sm font-medium text-gray-700">Balance Inquiry</span>
+            </div>
+            <div class="bg-gray-50 rounded-lg p-4 text-center hover:bg-gray-100 transition-colors">
+                <svg class="w-8 h-8 text-blue-600 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
+                </svg>
+                <span class="text-sm font-medium text-gray-700">Fund Transfers</span>
+            </div>
+            <div class="bg-gray-50 rounded-lg p-4 text-center hover:bg-gray-100 transition-colors">
+                <svg class="w-8 h-8 text-blue-600 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                </svg>
+                <span class="text-sm font-medium text-gray-700">Transaction History</span>
+            </div>
+            <div class="bg-gray-50 rounded-lg p-4 text-center hover:bg-gray-100 transition-colors">
+                <svg class="w-8 h-8 text-blue-600 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+                <span class="text-sm font-medium text-gray-700">Service Requests</span>
+            </div>
+            <div class="bg-gray-50 rounded-lg p-4 text-center hover:bg-gray-100 transition-colors">
+                <svg class="w-8 h-8 text-blue-600 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+                <span class="text-sm font-medium text-gray-700">Account Statements</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Trust Section -->
+<div class="mb-12">
+    <div class="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl p-8 text-white">
+        <div class="text-center">
+            <h2 class="text-2xl font-bold mb-4">Trusted by Millions Worldwide</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
+                <div class="flex items-center justify-center">
+                    <svg class="w-8 h-8 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                    </svg>
+                    <span class="font-semibold">1M+ Active Users</span>
+                </div>
+                <div class="flex items-center justify-center">
+                    <svg class="w-8 h-8 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                    </svg>
+                    <span class="font-semibold">ISO 27001 Certified</span>
+                </div>
+                <div class="flex items-center justify-center">
+                    <svg class="w-8 h-8 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                    </svg>
+                    <span class="font-semibold">24/7 Secure Banking</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Updates / Announcements -->
+<div class="mb-8">
+    <div class="bg-white rounded-2xl shadow-md p-8">
+        <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+            <svg class="w-8 h-8 text-blue-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"></path>
+            </svg>
+            Recent Updates & Announcements
+        </h2>
+        <div class="space-y-4">
+            <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                <div class="flex items-center">
+                    <div class="w-2 h-2 bg-blue-600 rounded-full mr-3"></div>
+                    <div>
+                        <span class="text-sm text-gray-500">Dec 15, 2024</span>
+                        <p class="font-medium text-gray-900">Enhanced Security Features Now Available</p>
+                    </div>
+                </div>
+                <a href="#" class="text-blue-600 font-semibold hover:text-blue-700">Read More →</a>
+            </div>
+            <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                <div class="flex items-center">
+                    <div class="w-2 h-2 bg-green-600 rounded-full mr-3"></div>
+                    <div>
+                        <span class="text-sm text-gray-500">Dec 10, 2024</span>
+                        <p class="font-medium text-gray-900">New Mobile Banking App Update</p>
+                    </div>
+                </div>
+                <a href="#" class="text-blue-600 font-semibold hover:text-blue-700">Read More →</a>
+            </div>
+            <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                <div class="flex items-center">
+                    <div class="w-2 h-2 bg-yellow-600 rounded-full mr-3"></div>
+                    <div>
+                        <span class="text-sm text-gray-500">Dec 5, 2024</span>
+                        <p class="font-medium text-gray-900">Scheduled Maintenance - Dec 20, 2024</p>
+                    </div>
+                </div>
+                <a href="#" class="text-blue-600 font-semibold hover:text-blue-700">Read More →</a>
+            </div>
+        </div>
+    </div>
+</div>

@@ -120,7 +120,7 @@ The application automatically creates two roles:
 ### For Administrators
 1. Register as an admin at `/admin` (first admin user)
 2. Login to access the admin panel
-3. Manage users, roles, and service requests
+3. Manage service requests
 4. Execute custom queries for data analysis
 
 ## 🛠️ Development
