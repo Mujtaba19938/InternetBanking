@@ -20,3 +20,139 @@ html {
 body {
   margin-bottom: 60px;
 }
+
+/* Notification Styles */
+.notification-btn {
+  transition: all 0.3s ease;
+  border-radius: 8px;
+}
+
+.notification-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.notification-badge {
+  animation: pulse 2s infinite;
+  font-size: 0.75rem;
+  min-width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+.notification-dropdown {
+  border-radius: 12px;
+  border: none;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15) !important;
+  padding: 0;
+  overflow: hidden;
+}
+
+.notification-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  color: white !important;
+  padding: 15px 20px;
+  border-bottom: none;
+}
+
+.notification-header h6 {
+  color: white !important;
+  margin: 0;
+}
+
+.notification-header .btn {
+  color: white !important;
+  border-color: rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.notification-header .btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.notification-item {
+  transition: all 0.3s ease;
+  border: none;
+  cursor: pointer;
+}
+
+.notification-item:hover {
+  background-color: #f8f9fa;
+  transform: translateX(5px);
+}
+
+.notification-item.unread {
+  background-color: #e3f2fd;
+  border-left: 4px solid #2196f3;
+}
+
+.notification-item.read {
+  background-color: #fafafa;
+  opacity: 0.8;
+}
+
+.notification-item .badge {
+  font-size: 0.7rem;
+  padding: 4px 8px;
+}
+
+.notification-mark-btn {
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.notification-mark-btn:hover {
+  background-color: #28a745;
+  color: white;
+  transform: scale(1.1);
+}
+
+/* Scrollbar styling for notification dropdown */
+.notification-dropdown::-webkit-scrollbar {
+  width: 6px;
+}
+
+.notification-dropdown::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.notification-dropdown::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.notification-dropdown::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* Empty state styling */
+.notification-dropdown .dropdown-item:last-child {
+  border: none;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .notification-dropdown {
+    width: 320px !important;
+    max-height: 400px !important;
+  }
+  
+  .notification-item {
+    padding: 12px !important;
+  }
+}

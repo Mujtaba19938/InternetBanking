@@ -26,6 +26,9 @@ namespace InternetBanking.Models
 
         public DateTime? AccountLockedUntil { get; set; }
 
+        [StringLength(256)]
+        public string? TransactionPassword { get; set; }
+
         public virtual ICollection<Account> Accounts { get; set; } = new List<Account>();
 
         public virtual ICollection<ServiceRequest> ServiceRequests { get; set; } = new List<ServiceRequest>();

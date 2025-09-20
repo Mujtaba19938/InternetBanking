@@ -6,11 +6,17 @@ namespace InternetBanking.Services
 {
     public interface INotificationService
     {
-        Task CreateNotificationAsync(string userId, string title, string message, string type, int? relatedEntityId = null, string? relatedEntityType = null);
+        Task CreateNotificationAsync(string userId, string title, string message, string type, int? relatedEntityId = null, string? relatedEntityType = null, string status = "info");
         Task<List<Notification>> GetUserNotificationsAsync(string userId, bool includeRead = false);
         Task<int> GetUnreadNotificationCountAsync(string userId);
         Task MarkNotificationAsReadAsync(int notificationId);
         Task MarkAllNotificationsAsReadAsync(string userId);
+        
+        // Card request specific methods
+        Task CreateCardRequestApprovalNotificationAsync(string userId, int requestId);
+        Task CreateCardRequestRejectionNotificationAsync(string userId, int requestId);
+        Task CreateCardReadyNotificationAsync(string userId, int requestId);
+        Task CheckAndCreateCardReadyNotificationsAsync();
     }
 
     public class NotificationService : INotificationService
@@ -22,7 +28,7 @@ namespace InternetBanking.Services
             _context = context;
         }
 
-        public async Task CreateNotificationAsync(string userId, string title, string message, string type, int? relatedEntityId = null, string? relatedEntityType = null)
+        public async Task CreateNotificationAsync(string userId, string title, string message, string type, int? relatedEntityId = null, string? relatedEntityType = null, string status = "info")
         {
             var notification = new Notification
             {
@@ -30,6 +36,7 @@ namespace InternetBanking.Services
                 Title = title,
                 Message = message,
                 Type = type,
+                Status = status,
                 RelatedEntityId = relatedEntityId,
                 RelatedEntityType = relatedEntityType,
                 CreatedDate = DateTime.Now,
@@ -85,6 +92,79 @@ namespace InternetBanking.Services
             }
 
             await _context.SaveChangesAsync();
+        }
+
+        public async Task CreateCardRequestApprovalNotificationAsync(string userId, int requestId)
+        {
+            var title = "Response to Debit Card Request";
+            var message = "Your request has been accepted. Your card will be available at your nearest branch within 5–10 business days.";
+            
+            await CreateNotificationAsync(
+                userId,
+                title,
+                message,
+                "CardRequest",
+                requestId,
+                "ServiceRequest",
+                "success"
+            );
+        }
+
+        public async Task CreateCardRequestRejectionNotificationAsync(string userId, int requestId)
+        {
+            var title = "Response to Debit Card Request";
+            var message = "Your Debit Card Request has been rejected.";
+            
+            await CreateNotificationAsync(
+                userId,
+                title,
+                message,
+                "CardRequest",
+                requestId,
+                "ServiceRequest",
+                "danger"
+            );
+        }
+
+        public async Task CreateCardReadyNotificationAsync(string userId, int requestId)
+        {
+            var title = "Card Ready for Pickup";
+            var message = "Your card has arrived at your nearest branch. Please collect it as soon as possible.";
+            
+            await CreateNotificationAsync(
+                userId,
+                title,
+                message,
+                "CardRequest",
+                requestId,
+                "ServiceRequest",
+                "info"
+            );
+        }
+
+        public async Task CheckAndCreateCardReadyNotificationsAsync()
+        {
+            // Find all approved card requests where ETA has been reached but status is not yet "ready"
+            var readyCards = await _context.ServiceRequests
+                .Where(sr => sr.RequestType == "Debit Card Request" 
+                    && sr.CardStatus == "approved" 
+                    && sr.EtaDate.HasValue 
+                    && sr.EtaDate <= DateTime.Now)
+                .ToListAsync();
+
+            foreach (var cardRequest in readyCards)
+            {
+                // Update status to ready
+                cardRequest.CardStatus = "ready";
+                
+                // Create notification
+                await CreateCardReadyNotificationAsync(cardRequest.UserId, cardRequest.RequestId);
+            }
+
+            if (readyCards.Any())
+            {
+                await _context.SaveChangesAsync();
+            }
         }
     }
 }

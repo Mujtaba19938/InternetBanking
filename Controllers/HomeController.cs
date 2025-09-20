@@ -61,10 +61,16 @@ namespace InternetBanking.Controllers
             var notifications = await _notificationService.GetUserNotificationsAsync(user.Id, includeRead: false);
             var unreadCount = await _notificationService.GetUnreadNotificationCountAsync(user.Id);
 
+            // Check if T-Pin is set - this determines if we show the T-Pin setup modal
+            var isTPinSet = !string.IsNullOrEmpty(user.TransactionPassword);
+            var showTPinSetup = !isTPinSet;
+
             ViewBag.Accounts = accounts;
             ViewBag.RecentTransactions = recentTransactions;
             ViewBag.Notifications = notifications;
             ViewBag.UnreadNotificationCount = unreadCount;
+            ViewBag.ShowTPinSetup = showTPinSetup;
+            ViewBag.IsTPinSet = isTPinSet;
 
             return View(accounts);
         }
@@ -168,6 +174,20 @@ namespace InternetBanking.Controllers
         public IActionResult Error()
         {
             return View();
+        }
+
+        [HttpGet("api/notifications/{userId}")]
+        public async Task<IActionResult> GetUserNotifications(string userId)
+        {
+            try
+            {
+                var notifications = await _notificationService.GetUserNotificationsAsync(userId, true);
+                return Json(notifications);
+            }
+            catch (Exception ex)
+            {
+                return Json(new { error = ex.Message });
+            }
         }
     }
 }

@@ -36,6 +36,13 @@ namespace InternetBanking.Controllers
                 return RedirectToAction("Index", "Admin");
             }
 
+            // Check if T-Pin is set
+            if (string.IsNullOrEmpty(user.TransactionPassword))
+            {
+                TempData["ErrorMessage"] = "T-Pin not set. Please set your T-Pin from your profile first.";
+                return RedirectToAction("Dashboard", "Home");
+            }
+
             var model = new FundTransferViewModel();
             await LoadAccountsForView(user.Id, model);
             return View(model);
@@ -72,15 +79,15 @@ namespace InternetBanking.Controllers
                     }
 
                     // Check if T-Pin is set
-                    if (string.IsNullOrEmpty(fromAccount.TransactionPassword))
+                    if (string.IsNullOrEmpty(user.TransactionPassword))
                     {
-                        ModelState.AddModelError("", "T-Pin not set. Please set your T-Pin from your profile first.");
-                        return View(model);
+                        TempData["ErrorMessage"] = "T-Pin not set. Please set your T-Pin from your profile first.";
+                        return RedirectToAction("Dashboard", "Home");
                     }
 
                     // Validate transaction password
                     var hashedPassword = HashPassword(model.TransactionPassword);
-                    if (fromAccount.TransactionPassword != hashedPassword)
+                    if (user.TransactionPassword != hashedPassword)
                     {
                         ModelState.AddModelError("TransactionPassword", "Invalid T-Pin.");
                         return View(model);

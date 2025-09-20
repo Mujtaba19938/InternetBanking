@@ -4,6 +4,32 @@
     Layout = "_AdminLayout";
 }
 
+@functions {
+    string GetCardStatusBadgeClass(string status)
+    {
+        return status switch
+        {
+            "approved" => "bg-success",
+            "rejected" => "bg-danger",
+            "ready" => "bg-info",
+            "pending" => "bg-warning",
+            _ => "bg-secondary"
+        };
+    }
+    
+    string GetCardStatusText(string status)
+    {
+        return status switch
+        {
+            "approved" => "✅ Approved",
+            "rejected" => "❌ Rejected", 
+            "ready" => "📦 Ready for Pickup",
+            "pending" => "⏳ Pending",
+            _ => status
+        };
+    }
+}
+
 <div class="container mt-4">
     <div class="row">
         <div class="col-12">
@@ -43,17 +69,70 @@
                                                     <strong>Response:</strong> @request.AdminResponse
                                                     <br><small class="text-muted">Responded on: @request.ResponseDate?.ToString("MMM dd, yyyy HH:mm")</small>
                                                 </div>
+                                                
+                                                @if (request.RequestType == "Debit Card Request" && !string.IsNullOrEmpty(request.CardStatus))
+                                                {
+                                                    <div class="mt-2">
+                                                        <span class="badge @GetCardStatusBadgeClass(request.CardStatus)">@GetCardStatusText(request.CardStatus)</span>
+                                                        @if (request.CardStatus == "approved" && request.EtaDate.HasValue)
+                                                        {
+                                                            <br><small class="text-muted">ETA: @request.EtaDate?.ToString("MMM dd, yyyy")</small>
+                                                        }
+                                                    </div>
+                                                    
+                                                    @if (request.CardStatus == "approved")
+                                                    {
+                                                        <form action="/admin/service-requests/@request.RequestId/mark-ready" method="post" class="mt-2">
+                                                            @Html.AntiForgeryToken()
+                                                            <button type="submit" class="btn btn-info btn-sm">Mark Card as Ready</button>
+                                                        </form>
+                                                    }
+                                                }
                                             }
                                             else
                                             {
-                                                <form action="/admin/service-requests/@request.RequestId/respond" method="post" class="mt-2">
-                                                    @Html.AntiForgeryToken()
-                                                    <input type="hidden" name="id" value="@request.RequestId" />
-                                                    <div class="form-group">
-                                                        <textarea name="response" class="form-control" rows="3" placeholder="Enter your response..." required></textarea>
+                                                @if (request.RequestType == "Debit Card Request")
+                                                {
+                                                    <div class="card-request-actions">
+                                                        <div class="row">
+                                                            <div class="col-md-6">
+                                                                <form action="/admin/service-requests/@request.RequestId/respond" method="post" class="mb-3">
+                                                                    @Html.AntiForgeryToken()
+                                                                    <input type="hidden" name="id" value="@request.RequestId" />
+                                                                    <input type="hidden" name="action" value="approve" />
+                                                                    <div class="form-group mb-2">
+                                                                        <label class="form-label text-success fw-bold">✅ Approval Message:</label>
+                                                                        <textarea name="response" class="form-control" rows="2" placeholder="Enter approval message..." required></textarea>
+                                                                    </div>
+                                                                    <button type="submit" class="btn btn-success btn-sm w-100">✅ Approve Card Request</button>
+                                                                </form>
+                                                            </div>
+                                                            <div class="col-md-6">
+                                                                <form action="/admin/service-requests/@request.RequestId/respond" method="post" class="mb-3">
+                                                                    @Html.AntiForgeryToken()
+                                                                    <input type="hidden" name="id" value="@request.RequestId" />
+                                                                    <input type="hidden" name="action" value="reject" />
+                                                                    <div class="form-group mb-2">
+                                                                        <label class="form-label text-danger fw-bold">❌ Rejection Reason:</label>
+                                                                        <textarea name="response" class="form-control" rows="2" placeholder="Enter rejection reason..." required></textarea>
+                                                                    </div>
+                                                                    <button type="submit" class="btn btn-danger btn-sm w-100">❌ Reject Card Request</button>
+                                                                </form>
+                                                            </div>
+                                                        </div>
                                                     </div>
-                                                    <button type="submit" class="btn btn-primary btn-sm mt-2">Send Response</button>
-                                                </form>
+                                                }
+                                                else
+                                                {
+                                                    <form action="/admin/service-requests/@request.RequestId/respond" method="post" class="mt-2">
+                                                        @Html.AntiForgeryToken()
+                                                        <input type="hidden" name="id" value="@request.RequestId" />
+                                                        <div class="form-group">
+                                                            <textarea name="response" class="form-control" rows="3" placeholder="Enter your response..." required></textarea>
+                                                        </div>
+                                                        <button type="submit" class="btn btn-primary btn-sm mt-2">Send Response</button>
+                                                    </form>
+                                                }
                                             }
                                         </div>
                                     </div>
@@ -65,4 +144,51 @@
             </div>
         </div>
     </div>
-</div> 
+</div>
+
+<style>
+    .card-request-actions {
+        border: 2px solid #e9ecef;
+        border-radius: 0.5rem;
+        padding: 1.5rem;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        margin-top: 1rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .card-request-actions .form-group {
+        margin-bottom: 0.75rem;
+    }
+    
+    .card-request-actions .form-label {
+        font-size: 0.875rem;
+        margin-bottom: 0.25rem;
+    }
+    
+    .card-request-actions .btn {
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        transition: all 0.3s ease;
+    }
+    
+    .card-request-actions .btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+    
+    .card-request-actions .btn-success {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        border: none;
+    }
+    
+    .card-request-actions .btn-danger {
+        background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%);
+        border: none;
+    }
+    
+    .card-request-actions .form-control:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 0 0.2rem rgba(0,123,255,0.25);
+    }
+</style> 

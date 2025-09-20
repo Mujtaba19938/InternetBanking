@@ -1,66 +1,221 @@
 ﻿@model IEnumerable<InternetBanking.Models.Account>
+@using System.Linq
 @{
     ViewData["Title"] = "Dashboard";
+    var totalBalance = Model?.Sum(a => a.Balance) ?? 0;
+    var recentTransactions = ViewBag.RecentTransactions as IEnumerable<InternetBanking.Models.Transaction> ?? new List<InternetBanking.Models.Transaction>();
+}
+
+@functions {
+    string GetNotificationBadgeClass(string status)
+    {
+        return status switch
+        {
+            "success" => "bg-green-100 text-green-800",
+            "danger" => "bg-red-100 text-red-800", 
+            "warning" => "bg-yellow-100 text-yellow-800",
+            "info" => "bg-blue-100 text-blue-800",
+            _ => "bg-gray-100 text-gray-800"
+        };
+    }
+    
+    string GetNotificationBadgeText(string status)
+    {
+        return status switch
+        {
+            "success" => "✅ Approved",
+            "danger" => "❌ Rejected",
+            "warning" => "⚠️ Warning",
+            "info" => "📦 Ready",
+            _ => "New"
+        };
+    }
 }
 
 @Html.AntiForgeryToken()
 
-
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2>Account Dashboard</h2>
-    <div class="d-flex align-items-center">
-        <div class="position-relative me-3">
-            <button class="btn btn-outline-primary position-relative" type="button" data-bs-toggle="dropdown" aria-expanded="false" id="notificationDropdown">
-                🔔 Notifications
+<!-- Modern Dashboard Header -->
+<div class="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8">
+    <div>
+        <h1 class="text-3xl font-bold text-gray-900 mb-2">Account Dashboard</h1>
+        <p class="text-gray-600">Welcome back! Here's your account overview.</p>
+    </div>
+    
+    <!-- Notifications -->
+    <div class="mt-4 lg:mt-0">
+        <div class="relative">
+            <button class="relative bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 px-4 py-3 flex items-center space-x-2 border border-gray-200" 
+                    type="button" data-bs-toggle="dropdown" aria-expanded="false" id="notificationDropdown">
+                <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-5 5v-5zM4.828 7l2.586 2.586a2 2 0 002.828 0L12 7H4.828zM4 12h16M4 16h16"></path>
+                </svg>
+                <span class="text-gray-700 font-medium">Notifications</span>
                 @if (ViewBag.UnreadNotificationCount > 0)
                 {
-                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                    <span class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-semibold">
                         @ViewBag.UnreadNotificationCount
                     </span>
                 }
             </button>
-            <div class="dropdown-menu dropdown-menu-end" style="width: 350px; max-height: 400px; overflow-y: auto;">
-                <div class="dropdown-header d-flex justify-content-between align-items-center">
-                    <h6 class="mb-0">Notifications</h6>
-                    @if (ViewBag.UnreadNotificationCount > 0)
+            
+            <div class="dropdown-menu dropdown-menu-end notification-dropdown absolute right-0 mt-2 w-96 bg-white rounded-2xl shadow-2xl border border-gray-200 z-50" style="max-height: 500px; overflow-y: auto;">
+                <div class="p-4 border-b border-gray-200">
+                    <div class="flex items-center justify-between">
+                        <h6 class="text-lg font-semibold text-gray-900">Notifications</h6>
+                        @if (ViewBag.UnreadNotificationCount > 0)
+                        {
+                            <button class="text-sm bg-blue-100 text-blue-700 px-3 py-1 rounded-lg hover:bg-blue-200 transition-colors" onclick="markAllAsRead()">
+                                Mark All Read
+                            </button>
+                        }
+                    </div>
+                </div>
+                
+                <div class="p-2">
+                    @if (ViewBag.Notifications != null && ((IEnumerable<dynamic>)ViewBag.Notifications).Any())
                     {
-                        <button class="btn btn-sm btn-outline-secondary" onclick="markAllAsRead()">Mark All Read</button>
+                        var notificationsList = ((IEnumerable<dynamic>)ViewBag.Notifications).ToList();
+                        for (int i = 0; i < notificationsList.Count; i++)
+                        {
+                            var notification = notificationsList[i];
+                            <div class="notification-item @(notification.IsRead ? "opacity-60" : "") p-3 rounded-xl hover:bg-gray-50 transition-colors" data-notification-id="@notification.NotificationId">
+                                <div class="flex items-start space-x-3">
+                                    <div class="flex-1">
+                                        <div class="flex items-center space-x-2 mb-1">
+                                            @if (!notification.IsRead)
+                                            {
+                                                <span class="px-2 py-1 text-xs font-medium rounded-full @GetNotificationBadgeClass(notification.Status)">
+                                                    @GetNotificationBadgeText(notification.Status)
+                                                </span>
+                                            }
+                                            <h6 class="text-sm font-semibold text-gray-900">@notification.Title</h6>
+                                        </div>
+                                        <p class="text-sm text-gray-600 mb-2">@notification.Message</p>
+                                        <div class="flex items-center justify-between">
+                                            <span class="text-xs text-gray-500">@notification.CreatedDate.ToString("MMM dd, yyyy HH:mm")</span>
+                                            @if (!notification.IsRead)
+                                            {
+                                                <button class="text-xs bg-green-100 text-green-700 px-2 py-1 rounded hover:bg-green-200 transition-colors" 
+                                                        onclick="markAsRead(@notification.NotificationId)" title="Mark as read">
+                                                    Mark Read
+                                                </button>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            @if (i < notificationsList.Count - 1)
+                            {
+                                <div class="border-b border-gray-100 my-2"></div>
+                            }
+                        }
+                    }
+                    else
+                    {
+                        <div class="text-center py-8">
+                            <div class="w-12 h-12 mx-auto mb-3 bg-gray-100 rounded-full flex items-center justify-center">
+                                <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-5 5v-5zM4.828 7l2.586 2.586a2 2 0 002.828 0L12 7H4.828zM4 12h16M4 16h16"></path>
+                                </svg>
+                            </div>
+                            <p class="text-gray-500 text-sm">No new notifications</p>
+                            <p class="text-gray-400 text-xs">You're all caught up!</p>
+                        </div>
                     }
                 </div>
-                <div class="dropdown-divider"></div>
-                @if (ViewBag.Notifications != null && ((IEnumerable<dynamic>)ViewBag.Notifications).Any())
-                {
-                    foreach (var notification in ViewBag.Notifications)
-                    {
-                        <div class="dropdown-item notification-item @(notification.IsRead ? "read" : "unread")" data-notification-id="@notification.NotificationId">
-                            <div class="d-flex justify-content-between align-items-start">
-                                <div class="flex-grow-1">
-                                    <h6 class="mb-1 @(notification.IsRead ? "text-muted" : "fw-bold")">@notification.Title</h6>
-                                    <p class="mb-1 small">@notification.Message</p>
-                                    <small class="text-muted">@notification.CreatedDate.ToString("MMM dd, yyyy HH:mm")</small>
-                                </div>
-                                @if (!notification.IsRead)
-                                {
-                                    <button class="btn btn-sm btn-outline-primary ms-2" onclick="markAsRead(@notification.NotificationId)">✓</button>
-                                }
-                            </div>
-                        </div>
-                        <div class="dropdown-divider"></div>
-                    }
-                }
-                else
-                {
-                    <div class="dropdown-item text-center text-muted">
-                        <small>No new notifications</small>
-                    </div>
-                }
             </div>
-        </div>
-        <div class="text-muted">
-            <small>Last Login: @DateTime.Now.ToString("MMM dd, yyyy HH:mm")</small>
         </div>
     </div>
 </div>
+
+<!-- Main Dashboard Content -->
+<div class="space-y-8">
+    <!-- Balance Overview -->
+    @await Html.PartialAsync("_BalanceOverview", totalBalance)
+    
+    <!-- Quick Actions -->
+    @await Html.PartialAsync("_QuickActions")
+    
+    <!-- T-Pin Warning (if not set) -->
+    @if (ViewBag.IsTPinSet == false)
+    {
+        <div class="bg-yellow-50 border border-yellow-200 rounded-2xl p-6">
+            <div class="flex items-center space-x-4">
+                <div class="w-12 h-12 bg-yellow-100 rounded-xl flex items-center justify-center">
+                    <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                    </svg>
+                </div>
+                <div class="flex-1">
+                    <h3 class="text-lg font-semibold text-yellow-800 mb-1">T-Pin Required</h3>
+                    <p class="text-yellow-700 mb-3">You need to set up your T-Pin to perform transactions and access all banking features.</p>
+                    <button onclick="showTPinSetupModal()" class="bg-yellow-600 text-white px-4 py-2 rounded-lg hover:bg-yellow-700 transition-colors font-medium">
+                        Set T-Pin Now
+                    </button>
+                </div>
+            </div>
+        </div>
+    }
+    
+    <!-- Account Cards Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        @foreach (var account in Model)
+        {
+            @await Html.PartialAsync("_AccountCard", account)
+        }
+    </div>
+    
+    <!-- Transaction History -->
+    @await Html.PartialAsync("_TransactionHistory", recentTransactions)
+</div>
+
+<!-- T-Pin Setup Modal for New Users -->
+@if (ViewBag.ShowTPinSetup == true)
+{
+    <div class="modal fade" id="tpinSetupModal" tabindex="-1" aria-labelledby="tpinSetupModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-2xl border-0 shadow-2xl">
+                <div class="modal-header bg-gradient-to-r from-yellow-400 to-yellow-500 text-white rounded-t-2xl">
+                    <h5 class="modal-title text-xl font-bold" id="tpinSetupModalLabel">🔐 Set Your T-Pin</h5>
+                    <span class="bg-red-500 text-white text-xs px-2 py-1 rounded-full font-semibold">Required</span>
+                </div>
+                <div class="modal-body p-6">
+                    <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-4 mb-6">
+                        <div class="flex items-center space-x-3">
+                            <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                            </svg>
+                            <div>
+                                <h6 class="font-semibold text-yellow-800">Security Required!</h6>
+                                <p class="text-sm text-yellow-700">You must set a Transaction Pin (T-Pin) to use banking services.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <form id="tpinSetupForm" class="space-y-4">
+                        <div>
+                            <label for="tpinPassword" class="block text-sm font-medium text-gray-700 mb-2">Set T-Pin</label>
+                            <input type="password" id="tpinPassword" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all" 
+                                   placeholder="Enter T-Pin (minimum 4 characters)" minlength="4" required />
+                            <p class="text-xs text-gray-500 mt-1">This T-Pin will work for all your accounts</p>
+                        </div>
+                        
+                        <div>
+                            <label for="tpinConfirm" class="block text-sm font-medium text-gray-700 mb-2">Confirm T-Pin</label>
+                            <input type="password" id="tpinConfirm" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all" 
+                                   placeholder="Confirm your T-Pin" minlength="4" required />
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer bg-gray-50 rounded-b-2xl p-6">
+                    <button type="button" id="saveTPinBtn" class="w-full bg-yellow-600 text-white py-3 rounded-xl font-semibold hover:bg-yellow-700 transition-colors">
+                        Set T-Pin
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
 
 @section Scripts {
     <script>
@@ -76,23 +231,19 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    // Update UI
                     const notificationItem = document.querySelector(`[data-notification-id="${notificationId}"]`);
                     if (notificationItem) {
-                        notificationItem.classList.remove('unread');
-                        notificationItem.classList.add('read');
-                        const markButton = notificationItem.querySelector('button');
-                        if (markButton) {
-                            markButton.remove();
-                        }
-                        const title = notificationItem.querySelector('h6');
-                        if (title) {
-                            title.classList.remove('fw-bold');
-                            title.classList.add('text-muted');
-                        }
+                        notificationItem.style.transition = 'all 0.3s ease';
+                        notificationItem.style.opacity = '0.6';
+                        
+                        setTimeout(() => {
+                            notificationItem.classList.add('opacity-60');
+                            const markButton = notificationItem.querySelector('button');
+                            if (markButton) {
+                                markButton.remove();
+                            }
+                        }, 300);
                     }
-                    
-                    // Update badge count
                     updateNotificationBadge();
                 }
             })
@@ -110,22 +261,16 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    // Update all notifications to read
-                    document.querySelectorAll('.notification-item').forEach(item => {
-                        item.classList.remove('unread');
-                        item.classList.add('read');
-                        const markButton = item.querySelector('button');
-                        if (markButton) {
-                            markButton.remove();
-                        }
-                        const title = item.querySelector('h6');
-                        if (title) {
-                            title.classList.remove('fw-bold');
-                            title.classList.add('text-muted');
-                        }
+                    document.querySelectorAll('.notification-item').forEach((item, index) => {
+                        setTimeout(() => {
+                            item.style.transition = 'all 0.3s ease';
+                            item.classList.add('opacity-60');
+                            const markButton = item.querySelector('button');
+                            if (markButton) {
+                                markButton.remove();
+                            }
+                        }, index * 100);
                     });
-                    
-                    // Update badge count
                     updateNotificationBadge();
                 }
             })
@@ -133,42 +278,27 @@
         }
 
         function updateNotificationBadge() {
-            const unreadCount = document.querySelectorAll('.notification-item.unread').length;
-            const badge = document.querySelector('.badge');
+            const unreadCount = document.querySelectorAll('.notification-item:not(.opacity-60)').length;
+            const badge = document.querySelector('.bg-red-500');
             if (badge) {
                 if (unreadCount > 0) {
                     badge.textContent = unreadCount;
-                    badge.style.display = 'inline';
+                    badge.style.display = 'flex';
                 } else {
                     badge.style.display = 'none';
                 }
             }
-            
-            // Update mark all button
-            const markAllButton = document.querySelector('.dropdown-header button');
-            if (markAllButton) {
-                if (unreadCount > 0) {
-                    markAllButton.style.display = 'inline-block';
-                } else {
-                    markAllButton.style.display = 'none';
-                }
-            }
         }
-    </script>
 
-    <!-- T-Pin Setup Script -->
-    <script>
+        // T-Pin Setup Script
         document.addEventListener('DOMContentLoaded', function() {
-            // Show T-Pin setup modal if needed
-            @if (TempData["ShowTPinSetup"] != null)
+            @if (ViewBag.ShowTPinSetup == true)
             {
                 <text>
                 var tpinModal = new bootstrap.Modal(document.getElementById('tpinSetupModal'));
                 tpinModal.show();
                 
-                // Add event listener for when modal is closed
                 document.getElementById('tpinSetupModal').addEventListener('hidden.bs.modal', function() {
-                    // Check if T-Pin was successfully set
                     if (!window.tpinSetSuccessfully) {
                         showTPinWarning();
                     }
@@ -176,16 +306,9 @@
                 </text>
             }
 
-            // Handle T-Pin setup form submission
             document.getElementById('saveTPinBtn').addEventListener('click', function() {
-                var accountId = document.getElementById('tpinAccount').value;
                 var password = document.getElementById('tpinPassword').value;
                 var confirmPassword = document.getElementById('tpinConfirm').value;
-
-                if (!accountId) {
-                    alert('Please select an account.');
-                    return;
-                }
 
                 if (!password || password.length < 4) {
                     alert('T-Pin must be at least 4 characters long.');
@@ -197,24 +320,21 @@
                     return;
                 }
 
-                // Send AJAX request to set T-Pin
                 fetch('/Profile/ResetTransactionPassword', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded',
                         'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
                     },
-                    body: 'accountId=' + encodeURIComponent(accountId) + 
-                          '&newPassword=' + encodeURIComponent(password) + 
+                    body: 'newPassword=' + encodeURIComponent(password) + 
                           '&confirmPassword=' + encodeURIComponent(confirmPassword)
                 })
                 .then(response => {
                     if (response.ok) {
-                        // Mark T-Pin as successfully set
                         window.tpinSetSuccessfully = true;
-                        // Close modal and reload page to show success message
                         var modal = bootstrap.Modal.getInstance(document.getElementById('tpinSetupModal'));
                         modal.hide();
+                        alert('T-Pin set successfully! You can now perform transactions.');
                         window.location.reload();
                     } else {
                         alert('Failed to set T-Pin. Please try again.');
@@ -227,190 +347,58 @@
             });
         });
 
-        // Function to show T-Pin warning popup
+        function showTPinSetupModal() {
+            var tpinModal = new bootstrap.Modal(document.getElementById('tpinSetupModal'));
+            tpinModal.show();
+        }
+
         function showTPinWarning() {
-            // Create warning modal HTML
             var warningModalHtml = `
-                <div class="modal fade" id="tpinWarningModal" tabindex="-1" aria-labelledby="tpinWarningModalLabel" aria-hidden="true">
+                <div class="modal fade" id="tpinWarningModal" tabindex="-1" aria-labelledby="tpinWarningModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
                     <div class="modal-dialog modal-dialog-centered">
-                        <div class="modal-content">
-                            <div class="modal-header bg-danger text-white">
-                                <h5 class="modal-title" id="tpinWarningModalLabel">⚠️ T-Pin Required</h5>
+                        <div class="modal-content rounded-2xl border-0 shadow-2xl">
+                            <div class="modal-header bg-gradient-to-r from-red-500 to-red-600 text-white rounded-t-2xl">
+                                <h5 class="modal-title text-xl font-bold" id="tpinWarningModalLabel">⚠️ T-Pin Required</h5>
+                                <span class="bg-yellow-400 text-yellow-900 text-xs px-2 py-1 rounded-full font-semibold">Cannot Skip</span>
                             </div>
-                            <div class="modal-body">
-                                <div class="alert alert-danger">
-                                    <strong>⚠️ Important Warning!</strong><br><br>
-                                    You have not set up your T-Pin yet. Without a T-Pin, you will not be able to perform any transactions including:
-                                    <ul class="mt-2 mb-0">
-                                        <li>Fund transfers</li>
-                                        <li>Cash deposits</li>
-                                        <li>Check deposits</li>
-                                        <li>Wire transfers</li>
-                                    </ul>
-                                    <br>
-                                    <strong>Please set up your T-Pin from your profile to use banking services.</strong>
+                            <div class="modal-body p-6">
+                                <div class="bg-red-50 border border-red-200 rounded-xl p-4">
+                                    <div class="flex items-start space-x-3">
+                                        <svg class="w-6 h-6 text-red-600 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                                        </svg>
+                                        <div>
+                                            <h6 class="font-semibold text-red-800 mb-2">Important Warning!</h6>
+                                            <p class="text-red-700 mb-3">You have not set up your T-Pin yet. Without a T-Pin, you will not be able to perform any transactions including:</p>
+                                            <ul class="text-sm text-red-700 space-y-1">
+                                                <li>• Fund transfers</li>
+                                                <li>• Cash deposits</li>
+                                                <li>• Check deposits</li>
+                                                <li>• Wire transfers</li>
+                                            </ul>
+                                            <p class="text-red-800 font-semibold mt-3">You must set up your T-Pin to continue using banking services.</p>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-primary" onclick="window.location.href='/Profile'">Go to Profile</button>
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">I'll Do It Later</button>
+                            <div class="modal-footer bg-gray-50 rounded-b-2xl p-6 space-x-3">
+                                <button type="button" class="flex-1 bg-blue-600 text-white py-3 rounded-xl font-semibold hover:bg-blue-700 transition-colors" 
+                                        onclick="showTPinSetupModal(); bootstrap.Modal.getInstance(document.getElementById('tpinWarningModal')).hide();">
+                                    Set T-Pin Now
+                                </button>
+                                <button type="button" class="flex-1 bg-gray-600 text-white py-3 rounded-xl font-semibold hover:bg-gray-700 transition-colors" 
+                                        onclick="window.location.href='/Profile'">
+                                    Go to Profile
+                                </button>
                             </div>
                         </div>
                     </div>
                 </div>
             `;
             
-            // Add modal to page
             document.body.insertAdjacentHTML('beforeend', warningModalHtml);
-            
-            // Show the warning modal
             var warningModal = new bootstrap.Modal(document.getElementById('tpinWarningModal'));
             warningModal.show();
         }
     </script>
-}
-
-<style>
-    .notification-item {
-        padding: 10px 15px;
-        border: none;
-        background: none;
-        text-align: left;
-        width: 100%;
-        transition: background-color 0.2s;
-    }
-
-    .notification-item:hover {
-        background-color: #f8f9fa;
-    }
-
-    .notification-item.unread {
-        background-color: #e3f2fd;
-        border-left: 3px solid #2196f3;
-    }
-
-    .notification-item.read {
-        opacity: 0.7;
-    }
-
-    .dropdown-menu {
-        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
-        border: 1px solid rgba(0, 0, 0, 0.1);
-    }
-
-    .dropdown-header {
-        background-color: #f8f9fa;
-        border-bottom: 1px solid #dee2e6;
-        padding: 10px 15px;
-    }
-
-    .dropdown-divider {
-        margin: 0;
-    }
-</style>
-
-<div class="row">
-    @foreach (var account in Model)
-    {
-        <div class="col-md-6 col-lg-4 mb-4">
-            <div class="card balance-card">
-                <div class="card-body">
-                    <h5 class="card-title">@account.AccountType Account</h5>
-                    <p class="card-text">
-                        <small>Account Number: @account.AccountNumber</small>
-                    </p>
-                    <h3 class="mb-3">$@account.Balance.ToString("N2")</h3>
-                    <div class="d-grid gap-2">
-                        <a asp-controller="Home" asp-action="AccountDetails" asp-route-accountId="@account.AccountId"
-                           class="btn btn-light btn-sm">View Details</a>
-                        <a asp-controller="Home" asp-action="TransactionHistory" asp-route-accountId="@account.AccountId"
-                           class="btn btn-outline-light btn-sm">Transaction History</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    }
-</div>
-
-<div class="row mt-4">
-    <div class="col-md-12">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0">Quick Actions</h5>
-            </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-3 mb-2">
-                        <a asp-controller="Transaction" asp-action="FundTransfer" class="btn btn-primary w-100">
-                            💸 Fund Transfer
-                        </a>
-                    </div>
-                    <div class="col-md-3 mb-2">
-                        <a asp-controller="Service" asp-action="Index" class="btn btn-outline-primary w-100">
-                            📋 Service Requests
-                        </a>
-                    </div>
-                    <div class="col-md-3 mb-2">
-                        <a asp-controller="Service" asp-action="MyRequests" class="btn btn-outline-primary w-100">
-                            📄 My Requests
-                        </a>
-                    </div>
-                    <div class="col-md-3 mb-2">
-                        <a href="#" class="btn btn-outline-primary w-100">
-                            ❓ Help & Support
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- T-Pin Setup Modal for New Users -->
-@if (TempData["ShowTPinSetup"] != null)
-{
-    <div class="modal fade" id="tpinSetupModal" tabindex="-1" aria-labelledby="tpinSetupModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header bg-warning text-dark">
-                    <h5 class="modal-title" id="tpinSetupModalLabel">🔐 Set Your T-Pin</h5>
-                </div>
-                <div class="modal-body">
-                    <div class="alert alert-warning">
-                        <strong>⚠️ Security Required!</strong><br>
-                        You must set a Transaction Pin (T-Pin) to use banking services.
-                    </div>
-                    
-                    <form id="tpinSetupForm">
-                        <div class="mb-3">
-                            <label for="tpinAccount" class="form-label">Select Account</label>
-                            <select id="tpinAccount" class="form-select" required>
-                                <option value="">Choose Account</option>
-                                @foreach (var account in Model)
-                                {
-                                    <option value="@account.AccountId">@account.AccountNumber - @account.AccountType</option>
-                                }
-                            </select>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="tpinPassword" class="form-label">Set T-Pin</label>
-                            <input type="password" id="tpinPassword" class="form-control" required 
-                                   placeholder="Enter T-Pin (minimum 4 characters)" minlength="4" />
-                            <small class="form-text text-muted">This will be used for all transactions</small>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="tpinConfirm" class="form-label">Confirm T-Pin</label>
-                            <input type="password" id="tpinConfirm" class="form-control" required 
-                                   placeholder="Confirm your T-Pin" minlength="4" />
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-warning" id="saveTPinBtn">Set T-Pin</button>
-                </div>
-            </div>
-        </div>
-    </div>
 }

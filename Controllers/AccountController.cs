@@ -146,7 +146,6 @@ namespace InternetBanking.Controllers
                     await _signInManager.SignInAsync(user, isPersistent: false);
 
                     TempData["SuccessMessage"] = "Registration successful! Your accounts have been created.";
-                    TempData["ShowTPinSetup"] = "true"; // Flag to show T-Pin setup popup
                     return RedirectToAction("Dashboard", "Home");
                 }
 

@@ -31,5 +31,11 @@ namespace InternetBanking.Models
         public string AdminResponse { get; set; } = string.Empty;
 
         public DateTime? ResponseDate { get; set; }
+
+        // New fields for card request tracking
+        [StringLength(20)]
+        public string? CardStatus { get; set; } // pending, approved, rejected, ready
+
+        public DateTime? EtaDate { get; set; } // Expected arrival date for approved cards
     }
 }

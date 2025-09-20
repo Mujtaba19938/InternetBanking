@@ -5,7 +5,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - Secure Internet Banking</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            important: true,
+            corePlugins: {
+                preflight: false,
+            },
+            safelist: [
+                'navbar-nav',
+                'nav-link',
+                'navbar-text',
+                'navbar-brand'
+            ]
+        }
+    </script>
     <style>
         .navbar-brand {
             font-weight: bold;
@@ -42,6 +58,63 @@
             background-color: #f8d7da;
             border-color: #f5c6cb;
             color: #721c24;
+        }
+
+        /* Force navbar text visibility */
+        .navbar-nav .nav-link {
+            color: #212529 !important;
+            display: block !important;
+            visibility: visible !important;
+        }
+
+        .navbar-text {
+            color: #212529 !important;
+            display: block !important;
+            visibility: visible !important;
+        }
+
+        .navbar-brand {
+            color: #2c5aa0 !important;
+            display: block !important;
+            visibility: visible !important;
+        }
+
+        /* Ensure TailwindCSS classes work properly */
+        .space-y-8 > * + * {
+            margin-top: 2rem;
+        }
+        
+        .space-y-4 > * + * {
+            margin-top: 1rem;
+        }
+        
+        .space-y-2 > * + * {
+            margin-top: 0.5rem;
+        }
+        
+        .space-y-1 > * + * {
+            margin-top: 0.25rem;
+        }
+
+        /* Force remove underlines from quick action buttons */
+        .quick-action-button {
+            text-decoration: none !important;
+        }
+        
+        .quick-action-button h3,
+        .quick-action-button p {
+            text-decoration: none !important;
+            border-bottom: none !important;
+        }
+        
+        .quick-action-button:hover {
+            text-decoration: none !important;
+        }
+        
+        .quick-action-button:hover h3,
+        .quick-action-button:hover p {
+            text-decoration: none !important;
+            border-bottom: none !important;
         }
     </style>
 </head>

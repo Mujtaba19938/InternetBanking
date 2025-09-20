@@ -58,17 +58,12 @@ namespace InternetBanking.Controllers
                 return RedirectToAction("Index", "Admin");
             }
 
-            var accounts = await _context.Accounts
-                .Where(a => a.UserId == user.Id && a.IsActive)
-                .ToListAsync();
-
-            ViewBag.Accounts = accounts;
             return View();
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ChangeTransactionPassword(int accountId, string currentPassword, string newPassword, string confirmPassword)
+        public async Task<IActionResult> ChangeTransactionPassword(string currentPassword, string newPassword, string confirmPassword)
         {
             var user = await _userManager.GetUserAsync(User);
             if (user == null)
@@ -84,35 +79,40 @@ namespace InternetBanking.Controllers
 
             if (newPassword != confirmPassword)
             {
-                ModelState.AddModelError("", "New password and confirmation do not match.");
-                await LoadAccountsForView(user.Id);
+                ModelState.AddModelError("", "New T-Pin and confirmation do not match.");
                 return View();
             }
 
-            var account = await _context.Accounts
-                .FirstOrDefaultAsync(a => a.AccountId == accountId && a.UserId == user.Id);
-
-            if (account == null)
+            if (string.IsNullOrWhiteSpace(user.TransactionPassword))
             {
-                ModelState.AddModelError("", "Account not found.");
-                await LoadAccountsForView(user.Id);
+                ModelState.AddModelError("", "No T-Pin set. Please use Reset T-Pin instead.");
                 return View();
             }
 
             // Verify current password
             var hashedCurrentPassword = HashPassword(currentPassword);
-            if (account.TransactionPassword != hashedCurrentPassword)
+            if (user.TransactionPassword != hashedCurrentPassword)
             {
-                ModelState.AddModelError("", "Current transaction password is incorrect.");
-                await LoadAccountsForView(user.Id);
+                ModelState.AddModelError("", "Current T-Pin is incorrect.");
                 return View();
             }
 
             // Update password
-            account.TransactionPassword = HashPassword(newPassword);
+            user.TransactionPassword = HashPassword(newPassword);
+            await _userManager.UpdateAsync(user);
+
+            // Also update all user's accounts for backward compatibility
+            var userAccounts = await _context.Accounts
+                .Where(a => a.UserId == user.Id && a.IsActive)
+                .ToListAsync();
+            
+            foreach (var account in userAccounts)
+            {
+                account.TransactionPassword = HashPassword(newPassword);
+            }
             await _context.SaveChangesAsync();
 
-            TempData["SuccessMessage"] = "Transaction password updated successfully.";
+            TempData["SuccessMessage"] = "T-Pin updated successfully for all your accounts.";
             return RedirectToAction("Index");
         }
 
@@ -131,17 +131,12 @@ namespace InternetBanking.Controllers
                 return RedirectToAction("Index", "Admin");
             }
 
-            var accounts = await _context.Accounts
-                .Where(a => a.UserId == user.Id && a.IsActive)
-                .ToListAsync();
-
-            ViewBag.Accounts = accounts;
             return View();
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ResetTransactionPassword(int accountId, string newPassword, string confirmPassword)
+        public async Task<IActionResult> ResetTransactionPassword(string newPassword, string confirmPassword)
         {
             var user = await _userManager.GetUserAsync(User);
             if (user == null)
@@ -157,33 +152,32 @@ namespace InternetBanking.Controllers
 
             if (newPassword != confirmPassword)
             {
-                ModelState.AddModelError("", "New password and confirmation do not match.");
-                await LoadAccountsForView(user.Id);
+                ModelState.AddModelError("", "New T-Pin and confirmation do not match.");
                 return View();
             }
 
             if (string.IsNullOrWhiteSpace(newPassword) || newPassword.Length < 4)
             {
                 ModelState.AddModelError("", "T-Pin must be at least 4 characters long.");
-                await LoadAccountsForView(user.Id);
                 return View();
             }
 
-            var account = await _context.Accounts
-                .FirstOrDefaultAsync(a => a.AccountId == accountId && a.UserId == user.Id);
+            // Update user's T-Pin
+            user.TransactionPassword = HashPassword(newPassword);
+            await _userManager.UpdateAsync(user);
 
-            if (account == null)
+            // Also update all user's accounts for backward compatibility
+            var userAccounts = await _context.Accounts
+                .Where(a => a.UserId == user.Id && a.IsActive)
+                .ToListAsync();
+            
+            foreach (var account in userAccounts)
             {
-                ModelState.AddModelError("", "Account not found.");
-                await LoadAccountsForView(user.Id);
-                return View();
+                account.TransactionPassword = HashPassword(newPassword);
             }
-
-            // Update password
-            account.TransactionPassword = HashPassword(newPassword);
             await _context.SaveChangesAsync();
 
-            TempData["SuccessMessage"] = "T-Pin reset successfully.";
+            TempData["SuccessMessage"] = "T-Pin reset successfully for all your accounts.";
             return RedirectToAction("Index");
         }
 

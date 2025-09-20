@@ -26,6 +26,9 @@ namespace InternetBanking.Models
         [StringLength(50)]
         public string Type { get; set; } = string.Empty; // e.g., "ServiceRequest", "Transaction", etc.
 
+        [StringLength(20)]
+        public string Status { get; set; } = "info"; // info, success, danger, warning for styling
+
         public DateTime CreatedDate { get; set; } = DateTime.Now;
 
         public bool IsRead { get; set; } = false;

@@ -96,25 +96,34 @@
             </div>
         </nav>
     </header>
-    <!-- Permanent Admin Credentials Modal -->
-    <div class="alert alert-warning alert-dismissible fade show sticky-top" role="alert" style="margin-bottom: 0; z-index: 1050;">
-        <div class="container">
-            <div class="row align-items-center">
-                <div class="col-md-8">
-                    <strong>🔑 Default Admin Credentials:</strong>
-                    <span class="ms-2">
-                        <strong>Username:</strong> <code>admin</code> | 
-                        <strong>Password:</strong> <code>Admin@123</code>
-                    </span>
-                    <small class="text-muted ms-2">⚠️ Change these credentials for security</small>
-                </div>
-                <div class="col-md-4 text-end">
-                    <button type="button" class="btn btn-sm btn-outline-warning" onclick="copyCredentials()">📋 Copy</button>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    <!-- Admin Credentials Banner - Only show when not logged in and default credentials are still in use -->
+    @if (!User.Identity.IsAuthenticated)
+    {
+        var adminCredentials = ViewBag.AdminCredentials as InternetBanking.Models.AdminCredentials;
+        var showDefaultCredentials = adminCredentials == null || adminCredentials.IsDefault;
+        
+        if (showDefaultCredentials)
+        {
+            <div class="alert alert-warning alert-dismissible fade show sticky-top" role="alert" style="margin-bottom: 0; z-index: 1050;">
+                <div class="container">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <strong>🔑 Default Admin Credentials:</strong>
+                            <span class="ms-2">
+                                <strong>Username:</strong> <code>admin</code> | 
+                                <strong>Password:</strong> <code>Admin@123</code>
+                            </span>
+                            <small class="text-muted ms-2">⚠️ Change these credentials for security</small>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <button type="button" class="btn btn-sm btn-outline-warning" onclick="copyCredentials()">📋 Copy</button>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
-    </div>
+        }
+    }
 
     <div class="container">
         <main role="main" class="pb-3">
